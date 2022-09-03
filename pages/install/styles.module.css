@@ -1,0 +1,49 @@
+.container {
+  margin: 10px;
+
+  & .description {
+    line-height: 24px;
+    display: flex;
+
+    &::before {
+      content: '';
+      position: relative;
+      display: inline-block;
+      width: 4px;
+      height: 24px;
+      background-color: #444444;
+      margin-right: 8px;
+    }
+  }
+
+  & .formContainer {
+    width: 400px;
+    margin-top: 10px;
+
+    & > div {
+      display: table;
+
+      & > p {
+        display: table-row;
+
+        & > label {
+          display: table-cell;
+          padding-right: 6px;
+        }
+        & > input {
+          display: table-cell;
+        }
+      }
+    }
+
+    & .submitArea {
+      margin: 10px 10px 0px;
+
+      & .submitMessage {
+        padding-left: 10px;
+        color: green;
+        font-size: small;
+      }
+    }
+  }
+}
