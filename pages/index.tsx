@@ -17,7 +17,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     const [directoriesResult, contentsResult] = await Promise.all([
       mysql.query('SELECT * FROM directories'),
       mysql.query(
-        'SELECT contents.*, directories.alias_path FROM contents LEFT JOIN directories ON contents.directory_id = directories.id ORDER BY contents.created_at DESC;'
+        'SELECT contents.*, directories.alias_path, thumbnails.data as thumbnail FROM contents LEFT JOIN directories ON contents.directory_id = directories.id LEFT JOIN thumbnails ON contents.id = thumbnails.content_id ORDER BY contents.created_at DESC;'
       ),
     ]);
     const directories = JSON.parse(JSON.stringify(directoriesResult as DirectoriesTable[]));

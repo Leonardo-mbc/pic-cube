@@ -2,6 +2,9 @@ const { workerData } = require('worker_threads');
 const chokidar = require('chokidar');
 const serverlessMysql = require('serverless-mysql');
 const nodePath = require('path');
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 const mysql = serverlessMysql();
 const { path: basePath, directoryId } = workerData;
@@ -35,11 +38,49 @@ watcher.on('all', async (event, path) => {
       const relativePath = nodePath.relative(basePath, dir);
       const pathFromBase = nodePath.join(relativePath, filename);
 
-      await mysql.query('INSERT INTO contents (directory_id, path) values(?, ?);', [
-        directoryId,
-        pathFromBase,
+      const [thumbBuffer, { insertId }] = await Promise.all([
+        makeThumbnail(path),
+        mysql.query('INSERT INTO contents (directory_id, path) values(?, ?);', [
+          directoryId,
+          pathFromBase,
+        ]),
       ]);
+
+      await mysql.query('INSERT INTO thumbnails SET ?;', {
+        content_id: insertId,
+        data: thumbBuffer,
+      });
+
       break;
     }
   }
 });
+
+async function makeThumbnail(path, rectSize = 200) {
+  const outputPath = `/tmp/${uuidv4()}`;
+
+  return new Promise((resolve, reject) => {
+    ffmpeg(fs.createReadStream(path))
+      .videoFilter([
+        {
+          filter: 'scale',
+          options: `'if(lt(a,1/1),${rectSize},-1)':'if(lt(a,1/1),-1,${rectSize})'`,
+        },
+        { filter: 'crop', options: [rectSize, rectSize] },
+      ])
+      .outputOptions('-vframes 1')
+      .outputOptions('-f image2pipe')
+      .outputOptions('-vcodec mjpeg')
+      .output(outputPath)
+      .on('end', async () => {
+        fs.readFile(outputPath, async (err, data) => {
+          if (err) {
+            reject(err);
+          }
+          fs.unlinkSync(outputPath);
+          resolve(data);
+        });
+      })
+      .run();
+  });
+}
