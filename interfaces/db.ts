@@ -30,4 +30,5 @@ export interface ContentsTable {
 
 export interface ContentsTableWithAliasPath extends ContentsTable {
   alias_path: string;
+  thumbnail: { type: string; data: Uint8Array };
 }

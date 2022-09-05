@@ -21,10 +21,11 @@ export const CREATE_TABLE: { [key in typeof TABLES[number]]: string } = {
     CREATE TABLE \`thumbnails\` (
       \`id\` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
       \`content_id\` int(10) UNSIGNED NOT NULL,
-      \`path\` text NOT NULL,
+      \`data\` MEDIUMBLOB NULL,
       \`created_at\` timestamp NOT NULL DEFAULT current_timestamp(),
       \`updated_at\` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-      PRIMARY KEY (\`id\`)
+      PRIMARY KEY (\`id\`),
+      INDEX \`data_index\` (\`data\`(255)) 
     );
   `,
   [TABLE_CONTENTS]: `
