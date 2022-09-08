@@ -44,8 +44,8 @@ const Install: NextPage<InstallProps> = (props) => {
       const missingTables = DB.TABLES.filter((tableName) => !tables.includes(tableName));
 
       try {
-        await dbRequest.create(missingTables);
-        setSubmitContext(false, 'データベース作成完了');
+        const { message } = await dbRequest.create(missingTables);
+        setSubmitContext(false, message);
 
         setTimeout(() => {
           router.replace('/');
