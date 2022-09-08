@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CREATE_TABLE } from '../../../constants/db';
+import { CREATE_TABLE, INSERT_INITIAL_VALUES } from '../../../constants/db';
 import { CreateTables } from '../../../interfaces/db';
 import { mysql, connect } from '../../../utilities/mysql-connect';
 
@@ -11,6 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await connect();
 
       await Promise.all(tables.map((name) => mysql.query(CREATE_TABLE[name])));
+      await Promise.all(INSERT_INITIAL_VALUES.map((sql) => mysql.query(sql)));
 
       await mysql.end();
 
