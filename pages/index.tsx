@@ -20,8 +20,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
         'SELECT contents.*, directories.alias_path, thumbnails.data as thumbnail FROM contents LEFT JOIN directories ON contents.directory_id = directories.id LEFT JOIN thumbnails ON contents.id = thumbnails.content_id ORDER BY contents.created_at DESC;'
       ),
     ]);
-    const directories = JSON.parse(JSON.stringify(directoriesResult as DirectoriesTable[]));
-    const contents = JSON.parse(JSON.stringify(contentsResult as ContentsTableWithAliasPath[]));
+    const directories = JSON.parse(JSON.stringify(directoriesResult)) as DirectoriesTable[];
+    const contents = JSON.parse(JSON.stringify(contentsResult)) as ContentsTableWithAliasPath[];
 
     await mysql.end();
 

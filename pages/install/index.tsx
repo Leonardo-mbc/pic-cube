@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { DBConfig } from '../../interfaces/db';
 import * as dbRequest from '../../requests/db';
+import * as scannerRequest from '../../requests/scanner';
 import * as DB from '../../constants/db';
 import styles from './styles.module.css';
 
@@ -44,10 +45,14 @@ const Install: NextPage<InstallProps> = (props) => {
       const missingTables = DB.TABLES.filter((tableName) => !tables.includes(tableName));
 
       try {
-        await dbRequest.create(missingTables);
-        setSubmitContext(false, 'データベース作成完了');
+        const { message } = await dbRequest.create(missingTables);
+        setSubmitContext(false, message);
 
-        setTimeout(() => {
+        await scannerRequest.stop();
+
+        setTimeout(async () => {
+          // scannerRequest.stop と実行タイミングをずらすために setTimeout 内に設置
+          await scannerRequest.check();
           router.replace('/');
         }, 2000);
       } catch (e) {

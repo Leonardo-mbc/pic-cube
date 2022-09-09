@@ -5,9 +5,10 @@ const nodePath = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const mysql = serverlessMysql();
-const { path: basePath, directoryId } = workerData;
+const { path: basePath, directoryId, ignoreInitial, configs } = workerData;
 
 const TARGET_EXT = ['.jpeg', '.jpg', '.png', '.bpm', '.gif'];
 
@@ -20,13 +21,15 @@ mysql.config({
 
 const watcher = chokidar.watch(basePath, {
   ignored: [/[\/\\]\./, /@eaDir\//],
+  ignoreInitial: ignoreInitial || false,
   persistent: true,
   usePolling: true,
   interval: 10000,
 });
 
+console.log('[ADD SCANNER]', basePath);
 watcher.on('all', async (event, path) => {
-  console.log(`SCAN_[${event}]`, path);
+  console.log(`[SCAN:${event}]`, path);
   const { dir, base: filename, ext } = nodePath.parse(path);
 
   if (!TARGET_EXT.includes(ext.toLowerCase())) {
@@ -36,14 +39,24 @@ watcher.on('all', async (event, path) => {
   switch (event) {
     case 'add': {
       const relativePath = nodePath.relative(basePath, dir);
-      const pathFromBase = nodePath.join(relativePath, filename);
+      const fileHash = await makeFileHash(path);
+
+      if (configs.import.ignoreSameFileHash) {
+        const sameHashFiles = await mysql.query('SELECT * FROM contents WHERE file_hash = ?;', [
+          fileHash,
+        ]);
+
+        if (0 < sameHashFiles.length) {
+          break;
+        }
+      }
 
       const [thumbBuffer, { insertId }] = await Promise.all([
         makeThumbnail(path),
-        mysql.query('INSERT INTO contents (directory_id, path) values(?, ?);', [
-          directoryId,
-          pathFromBase,
-        ]),
+        mysql.query(
+          'INSERT INTO contents (directory_id, path, filename, file_hash) values(?, ?, ?, ?);',
+          [directoryId, relativePath, filename, fileHash]
+        ),
       ]);
 
       await mysql.query('INSERT INTO thumbnails SET ?;', {
@@ -56,7 +69,7 @@ watcher.on('all', async (event, path) => {
   }
 });
 
-async function makeThumbnail(path, rectSize = 200) {
+function makeThumbnail(path, rectSize = 200) {
   const outputPath = `/tmp/${uuidv4()}`;
 
   return new Promise((resolve, reject) => {
@@ -83,4 +96,23 @@ async function makeThumbnail(path, rectSize = 200) {
       })
       .run();
   });
+}
+
+function makeFileHash(path) {
+  return new Promise((resolve, reject) => {
+    const readStream = fs.createReadStream(path);
+    const sha512hash = crypto.createHash('sha512');
+    sha512hash.setEncoding('hex');
+    readStream.pipe(sha512hash);
+    readStream.on('end', () => {
+      resolve(sha512hash.read());
+    });
+    readStream.on('error', (e) => {
+      reject(e);
+    });
+  });
+}
+
+function makeTextHash(text) {
+  return crypto.createHash('sha512').update(text).digest('hex');
 }

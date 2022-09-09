@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import nodePath from 'path';
-import { Worker } from 'worker_threads';
 import punycode from 'punycode';
 import { mysql, connect } from '../../../utilities/mysql-connect';
+import { startScanner } from '../../../utilities/start-scanner';
 
 interface AddDirectoryParams {
   path: string;
@@ -37,11 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const { directoryId } = (sqlResult as [{ directoryId: number }])[0];
 
-      new Worker(`${process.cwd()}/workers/scan-directory.js`, {
-        workerData: {
-          path: aliasPath,
-          directoryId,
-        },
+      await startScanner({
+        path: aliasPath,
+        directoryId,
       });
 
       const directories = JSON.parse(

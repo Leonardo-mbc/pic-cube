@@ -24,6 +24,8 @@ export interface ContentsTable {
   id: number;
   directory_id: number;
   path: string;
+  filename: string;
+  file_hash: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -31,4 +33,11 @@ export interface ContentsTable {
 export interface ContentsTableWithAliasPath extends ContentsTable {
   alias_path: string;
   thumbnail: { type: string; data: Uint8Array };
+}
+
+export interface Configs {
+  name: string;
+  value: string;
+  created_at: Date;
+  updated_at: Date;
 }

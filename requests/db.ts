@@ -16,7 +16,7 @@ export async function check(config: DBConfig): Promise<CheckResponse> {
 }
 
 interface CreateResponse {
-  tables: string[];
+  message: string;
 }
 
 export async function create(tables: string[]): Promise<CreateResponse> {
