@@ -3,7 +3,7 @@ import fs from 'fs';
 import nodePath from 'path';
 import punycode from 'punycode';
 import { mysql, connect } from '../../../utilities/mysql-connect';
-import { startScanner } from '../../../utilities/start-scanner';
+const { startScanner } = require('../../../utilities/scanner-controller');
 
 interface AddDirectoryParams {
   path: string;

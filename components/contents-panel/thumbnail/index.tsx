@@ -14,6 +14,9 @@ export const Thumbnail: React.FC<ImageProps> = (props) => {
     <div className={styles.container}>
       <a href={link}>
         <img src={thumbData} />
+        <div className={styles.label}>
+          <span>{props.content.filename}</span>
+        </div>
       </a>
     </div>
   );

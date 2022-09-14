@@ -6,6 +6,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const dayjs = require('dayjs');
 
 const mysql = serverlessMysql();
 const { path: basePath, directoryId, ignoreInitial, configs } = workerData;
@@ -31,6 +32,7 @@ console.log('[ADD SCANNER]', basePath);
 watcher.on('all', async (event, path) => {
   console.log(`[SCAN:${event}]`, path);
   const { dir, base: filename, ext } = nodePath.parse(path);
+  const relativePath = nodePath.relative(basePath, dir);
 
   if (!TARGET_EXT.includes(ext.toLowerCase())) {
     return;
@@ -38,32 +40,63 @@ watcher.on('all', async (event, path) => {
 
   switch (event) {
     case 'add': {
-      const relativePath = nodePath.relative(basePath, dir);
-      const fileHash = await makeFileHash(path);
+      const [fileHash, fileInfo] = await Promise.all([makeFileHash(path), getFileInfo(path)]);
 
-      if (configs.import.ignoreSameFileHash) {
-        const sameHashFiles = await mysql.query('SELECT * FROM contents WHERE file_hash = ?;', [
-          fileHash,
+      const lastAccessedAt = dayjs(fileInfo.atime).format('YYYY-MM-DD HH:mm:ss.SSS');
+      const lastModifiedAt = dayjs(fileInfo.mtime).format('YYYY-MM-DD HH:mm:ss.SSS');
+      const lastChangedAt = dayjs(fileInfo.ctime).format('YYYY-MM-DD HH:mm:ss.SSS');
+      const createdAt = dayjs(fileInfo.birthtime).format('YYYY-MM-DD HH:mm:ss.SSS');
+      const recentTime = dayjs().add(-15, 'seconds').format('YYYY-MM-DD HH:mm:ss.SSS');
+
+      const [recentUnlinkedFile] = await mysql.query(
+        'SELECT * FROM contents WHERE unlink = 1 AND file_hash = ? AND updated_at > ? AND created_at = ?;',
+        [fileHash, recentTime, createdAt]
+      );
+
+      if (recentUnlinkedFile) {
+        await mysql.query(
+          'UPDATE contents SET unlink = 0, directory_id = ?, path = ?, filename = ? WHERE id = ?;',
+          [directoryId, relativePath, filename, recentUnlinkedFile.id]
+        );
+      } else {
+        if (configs.import.ignoreSameFileHash) {
+          const sameHashFiles = await mysql.query('SELECT * FROM contents WHERE file_hash = ?;', [
+            fileHash,
+          ]);
+
+          if (0 < sameHashFiles.length) {
+            break;
+          }
+        }
+
+        const [thumbBuffer, { insertId }] = await Promise.all([
+          makeThumbnail(path),
+          mysql.query('INSERT INTO contents SET ?;', {
+            directory_id: directoryId,
+            path: relativePath,
+            filename: filename,
+            file_hash: fileHash,
+            last_accessed_at: lastAccessedAt,
+            last_modified_at: lastModifiedAt,
+            last_changed_at: lastChangedAt,
+            created_at: createdAt,
+          }),
         ]);
 
-        if (0 < sameHashFiles.length) {
-          break;
-        }
+        await mysql.query('INSERT INTO thumbnails SET ?;', {
+          content_id: insertId,
+          data: thumbBuffer,
+        });
       }
 
-      const [thumbBuffer, { insertId }] = await Promise.all([
-        makeThumbnail(path),
-        mysql.query(
-          'INSERT INTO contents (directory_id, path, filename, file_hash) values(?, ?, ?, ?);',
-          [directoryId, relativePath, filename, fileHash]
-        ),
-      ]);
+      break;
+    }
 
-      await mysql.query('INSERT INTO thumbnails SET ?;', {
-        content_id: insertId,
-        data: thumbBuffer,
-      });
-
+    case 'unlink': {
+      await mysql.query(
+        'UPDATE contents SET unlink = 1 WHERE directory_id = ? AND path = ? AND filename = ?;',
+        [directoryId, relativePath, filename]
+      );
       break;
     }
   }
@@ -115,4 +148,17 @@ function makeFileHash(path) {
 
 function makeTextHash(text) {
   return crypto.createHash('sha512').update(text).digest('hex');
+}
+
+function getFileInfo(path) {
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, stats) => {
+      if (err) {
+        reject(err);
+      } else {
+        //Logging the stats Object
+        resolve(stats);
+      }
+    });
+  });
 }
