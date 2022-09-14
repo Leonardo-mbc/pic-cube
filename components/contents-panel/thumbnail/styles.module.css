@@ -1,5 +1,6 @@
 .container {
   display: inline-block;
+  margin-bottom: 10px;
 
   & img {
     margin: 5px;
@@ -12,6 +13,18 @@
 
     &:hover {
       opacity: 0.8;
+    }
+  }
+
+  & .label {
+    text-align: center;
+    margin: 10px 0px;
+
+    & > span {
+      font-size: small;
+      background-color: #e4e4e4;
+      border-radius: 50px;
+      padding: 3px 10px;
     }
   }
 }
