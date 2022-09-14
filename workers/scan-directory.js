@@ -156,7 +156,6 @@ function getFileInfo(path) {
       if (err) {
         reject(err);
       } else {
-        //Logging the stats Object
         resolve(stats);
       }
     });
