@@ -1,26 +1,30 @@
+:root {
+  --white: #ffffff;
+  --black: #404040;
+  --black-l: #525352;
+  --black-ll: #777777;
+  --black-lll: #eaeaea;
+  --blue: #5b92ff;
+
+  --thumb-small: 130px;
+  --thumb-medium: 230px;
+  --thumb-large: 330px;
+}
+
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-image: url('/images/bg640.jpg');
+  background-position: right top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--black);
 }
 
 a {
   color: inherit;
   text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
-  }
 }
