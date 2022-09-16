@@ -6,6 +6,7 @@ import { ContentsPanel } from '../components/contents-panel';
 import { DirectoriesTable, ContentsTableWithAliasPath } from '../interfaces/db';
 import { mysql, connect } from '../utilities/mysql-connect';
 import styles from './index/styles.module.css';
+import { PageTitle } from '../components/page-title';
 
 interface IndexProps {
   directories: DirectoriesTable[];
@@ -56,9 +57,10 @@ const Index: NextPage<IndexProps> = (props) => {
         <title>pic-cube</title>
       </Head>
       {props.directories.length ? (
-        <div>
+        <>
+          <PageTitle title="最近追加したもの" />
           <ContentsPanel contents={props.contents} />
-        </div>
+        </>
       ) : (
         <div>
           <p>まずはパスを追加してみてください</p>

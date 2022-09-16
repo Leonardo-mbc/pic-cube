@@ -1,12 +1,54 @@
+.toolsContainer {
+  margin: 0px 18px 18px;
+  text-align: right;
+
+  & .toolsParts {
+    display: inline-block;
+    font-size: small;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    & .thumbSize {
+      color: var(--blue);
+    }
+  }
+}
+
 .container {
-  & .imageContainer {
-    line-height: 0px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--thumb-medium), 1fr));
+  grid-gap: 10px;
+  margin: 18px;
+
+  &.thumbSmall {
+    grid-template-columns: repeat(auto-fit, minmax(var(--thumb-small), 1fr));
 
     & img {
-      margin: 5px;
-      object-fit: cover;
-      width: 230px;
-      height: 230px;
+      width: var(--thumb-small);
+      height: var(--thumb-small);
+    }
+
+    & span {
+      max-width: var(--thumb-small);
+      font-size: x-small;
+    }
+  }
+
+  &.thumbLarge {
+    grid-template-columns: repeat(auto-fit, minmax(var(--thumb-large), 1fr));
+
+    & img {
+      width: var(--thumb-large);
+      height: var(--thumb-large);
+      border-width: 3px;
+    }
+
+    & span {
+      max-width: var(--thumb-large);
     }
   }
 }
