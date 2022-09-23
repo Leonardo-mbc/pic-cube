@@ -23,6 +23,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.34.0",
     "react-icons": "^4.4.0",
+    "recoil": "^0.7.5",
     "serverless-mysql": "^1.5.4",
     "uuid": "^8.3.2"
   },

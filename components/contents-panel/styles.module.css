@@ -1,20 +1,15 @@
 .toolsContainer {
-  margin: 0px 18px 18px;
-  text-align: right;
+  margin: -10px 18px 18px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: sticky;
+  top: 0px;
+  z-index: 100;
+  padding: 10px 0px;
 
-  & .toolsParts {
-    display: inline-block;
-    font-size: small;
-    cursor: pointer;
-    user-select: none;
-
-    &:hover {
-      opacity: 0.8;
-    }
-
-    & .thumbSize {
-      color: var(--blue);
-    }
+  & .thumbSize {
+    color: var(--blue);
   }
 }
 
@@ -24,12 +19,48 @@
   grid-gap: 10px;
   margin: 18px;
 
+  &.selectable {
+    & img {
+      border-style: dashed;
+    }
+
+    & div {
+      transform: scale(0.95);
+      transform-origin: left center;
+    }
+
+    & span {
+      background-color: transparent;
+      color: var(--black-l);
+      padding: 4px 4px;
+      white-space: initial;
+      overflow: initial;
+      text-overflow: initial;
+      word-break: break-all;
+    }
+  }
+
   &.thumbSmall {
     grid-template-columns: repeat(auto-fit, minmax(var(--thumb-small), 1fr));
+
+    & a > section {
+      width: var(--thumb-small);
+      height: var(--thumb-small);
+
+      &::before {
+        width: calc(var(--thumb-small) * 1.5);
+        height: calc(var(--thumb-small) * 1.5);
+      }
+    }
 
     & img {
       width: var(--thumb-small);
       height: var(--thumb-small);
+    }
+
+    & img + section {
+      width: calc(var(--thumb-small) - 20px);
+      height: calc(var(--thumb-small) - 20px);
     }
 
     & span {
@@ -41,10 +72,25 @@
   &.thumbLarge {
     grid-template-columns: repeat(auto-fit, minmax(var(--thumb-large), 1fr));
 
+    & a > section {
+      width: var(--thumb-large);
+      height: var(--thumb-large);
+
+      &::before {
+        width: calc(var(--thumb-large) * 1.5);
+        height: calc(var(--thumb-large) * 1.5);
+      }
+    }
+
     & img {
       width: var(--thumb-large);
       height: var(--thumb-large);
       border-width: 3px;
+    }
+
+    & img + section {
+      width: calc(var(--thumb-large) - 20px);
+      height: calc(var(--thumb-large) - 20px);
     }
 
     & span {

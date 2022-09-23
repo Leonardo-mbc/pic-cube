@@ -1,12 +1,14 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
-import { useEffect } from 'react';
 import { DirectoryList } from '../components/directory-list';
 import { ContentsPanel } from '../components/contents-panel';
 import { DirectoriesTable, ContentsTableWithAliasPath } from '../interfaces/db';
 import { mysql, connect } from '../utilities/mysql-connect';
 import styles from './index/styles.module.css';
 import { PageTitle } from '../components/page-title';
+import { useEffect } from 'react';
+import { useSetRecoilState } from 'recoil';
+import { contentsState } from '../components/contents-panel/state';
 
 interface IndexProps {
   directories: DirectoriesTable[];
@@ -44,13 +46,12 @@ export const getServerSideProps: GetServerSideProps = async () => {
 };
 
 const Index: NextPage<IndexProps> = (props) => {
+  const setContents = useSetRecoilState(contentsState);
+
   useEffect(() => {
-    const worker = new Worker(new URL('../workers/sums-sample', import.meta.url));
-    worker.addEventListener('message', ({ data: { value } }) => {
-      console.log(value);
-    });
-    worker.postMessage({ count: 1 });
-  }, []);
+    setContents(props.contents);
+  }, [props.contents]);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -59,7 +60,7 @@ const Index: NextPage<IndexProps> = (props) => {
       {props.directories.length ? (
         <>
           <PageTitle title="最近追加したもの" />
-          <ContentsPanel contents={props.contents} />
+          <ContentsPanel />
         </>
       ) : (
         <div>

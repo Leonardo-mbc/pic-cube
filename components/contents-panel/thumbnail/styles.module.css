@@ -1,6 +1,9 @@
 .container {
   display: grid;
   justify-content: center;
+  transition: transform ease-out 100ms;
+  transform: scale(1);
+  transform-origin: left center;
 
   & a {
     user-select: none;
@@ -10,15 +13,69 @@
     &:hover {
       opacity: 0.8;
     }
-  }
 
-  & img {
-    object-fit: cover;
-    width: var(--thumb-medium);
-    height: var(--thumb-medium);
-    border-radius: 4px 4px 4px 0px;
-    border: 2px var(--black-l) solid;
-    box-sizing: border-box;
+    & .rotateBorder {
+      display: none;
+      position: absolute;
+      width: var(--thumb-medium);
+      height: var(--thumb-medium);
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        background: linear-gradient(to right, var(--blue) 0%, var(--green) 100%);
+        animation: rotate 1.5s linear 0s infinite;
+        width: calc(230px * 1.5);
+        height: calc(230px * 1.5);
+        left: -22%;
+        top: -22%;
+      }
+    }
+
+    & img {
+      object-fit: cover;
+      width: var(--thumb-medium);
+      height: var(--thumb-medium);
+      border-radius: 4px 4px 4px 0px;
+      border: 2px var(--black-l) solid;
+      box-sizing: border-box;
+      transition: border-width 150ms ease-out;
+      position: relative;
+    }
+
+    & .orderDisplay {
+      width: calc(var(--thumb-medium) - 12px);
+      height: calc(var(--thumb-medium) - 12px);
+      background-color: var(--black);
+      position: absolute;
+      top: 6px;
+      margin-left: 6px;
+      opacity: 0;
+      transition: opacity 100ms ease-out 0ms;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: transparent;
+      font-size: 60px;
+    }
+
+    &.selected {
+      & .rotateBorder {
+        display: block;
+      }
+
+      & img {
+        border: 6px transparent solid;
+        transition: border-width 50ms ease-out;
+      }
+
+      & .orderDisplay {
+        opacity: 0.5;
+        transition: opacity 100ms ease-out 50ms;
+        color: var(--white);
+      }
+    }
   }
 
   & .label {
@@ -38,5 +95,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }

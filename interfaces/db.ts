@@ -41,3 +41,7 @@ export interface Configs {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface UnlinkContentsParams {
+  contentIds: number[];
+}

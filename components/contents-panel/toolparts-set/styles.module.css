@@ -1,0 +1,27 @@
+.toolsPartsSet {
+  display: flex;
+  overflow: hidden;
+
+  &.withTransition {
+    transition: width 250ms cubic-bezier(0, 0, 0, 1.4);
+  }
+
+  &.isClose {
+    transition: width 250ms cubic-bezier(0, 0, 0.15, 1);
+  }
+
+  &:not(:last-child) {
+    margin-right: 10px;
+  }
+
+  & > *:not(:last-child) {
+    margin-right: 10px;
+  }
+
+  &.button {
+  }
+
+  & .inner {
+    white-space: pre;
+  }
+}

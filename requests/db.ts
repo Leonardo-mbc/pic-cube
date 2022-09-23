@@ -45,3 +45,17 @@ export async function addDirectory(path: string): Promise<AddDirectoryResponse> 
 
   return await request.json();
 }
+
+interface UnlinkContentsResponse {}
+
+export async function unlinkContents(contentIds: number[]): Promise<UnlinkContentsResponse> {
+  const request = await fetch('/api/db/unlink-contents', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ contentIds }),
+  });
+
+  return await request.json();
+}
