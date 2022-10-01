@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import useResizeObserver from '@react-hook/resize-observer';
 import styles from './styles.module.css';
 
 interface ToolPartsSetProps {
@@ -14,7 +15,9 @@ export const ToolPartsSet: React.FC<ToolPartsSetProps> = (props) => {
   const buttonRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
+  // TODO: width が付いてしまっているので内部のボタンサイズが変わっても検知できてない
+
+  function measureWidth() {
     if (buttonRef.current && innerRef.current) {
       const { width } = buttonRef.current.getBoundingClientRect();
       const { width: innerWidth } = innerRef.current.getBoundingClientRect();
@@ -25,7 +28,13 @@ export const ToolPartsSet: React.FC<ToolPartsSetProps> = (props) => {
         setContainerWidth(width);
       }
     }
+  }
+
+  useLayoutEffect(() => {
+    measureWidth();
   }, [buttonRef.current, innerRef.current, props.isOpen]);
+
+  useResizeObserver(innerRef, measureWidth);
 
   useEffect(() => {
     setTimeout(() => {
@@ -42,9 +51,7 @@ export const ToolPartsSet: React.FC<ToolPartsSetProps> = (props) => {
         [styles.withTransition]: withTransition,
         [styles.isClose]: withTransition && !props.isOpen,
       })}>
-      <div className={styles.button} ref={buttonRef}>
-        {props.button}
-      </div>
+      <div ref={buttonRef}>{props.button}</div>
       <div ref={innerRef} className={styles.inner}>
         {props.children}
       </div>

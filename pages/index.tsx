@@ -2,31 +2,23 @@ import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import { DirectoryList } from '../components/directory-list';
 import { ContentsPanel } from '../components/contents-panel';
-import { DirectoriesTable, ContentsTableWithAliasPath } from '../interfaces/db';
-import { mysql, connect } from '../utilities/mysql-connect';
+import { DirectoriesTable, ContentsWithChildItems } from '../interfaces/db';
 import styles from './index/styles.module.css';
 import { PageTitle } from '../components/page-title';
 import { useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { contentsState } from '../components/contents-panel/state';
+import { listContents, listDirectories } from './api/db/list-contents';
+import { checkTables } from './api/db/check';
 
 interface IndexProps {
   directories: DirectoriesTable[];
-  contents: ContentsTableWithAliasPath[];
+  contents: ContentsWithChildItems[];
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  if (await connect()) {
-    const [directoriesResult, contentsResult] = await Promise.all([
-      mysql.query('SELECT * FROM directories'),
-      mysql.query(
-        'SELECT contents.*, directories.alias_path, thumbnails.data as thumbnail FROM contents LEFT JOIN directories ON contents.directory_id = directories.id LEFT JOIN thumbnails ON contents.id = thumbnails.content_id WHERE contents.unlink = 0 ORDER BY contents.created_at DESC;'
-      ),
-    ]);
-    const directories = JSON.parse(JSON.stringify(directoriesResult)) as DirectoriesTable[];
-    const contents = JSON.parse(JSON.stringify(contentsResult)) as ContentsTableWithAliasPath[];
-
-    await mysql.end();
+  if (await checkTables()) {
+    const [{ contents }, { directories }] = await Promise.all([listContents(), listDirectories()]);
 
     const props: IndexProps = {
       directories,

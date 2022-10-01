@@ -1,4 +1,4 @@
-import { DBConfig, DirectoriesTable } from '../interfaces/db';
+import { ContentsWithChildItems, DBConfig, DirectoriesTable } from '../interfaces/db';
 
 interface CheckResponse {
   tables: string[];
@@ -46,7 +46,24 @@ export async function addDirectory(path: string): Promise<AddDirectoryResponse> 
   return await request.json();
 }
 
-interface UnlinkContentsResponse {}
+interface ListContentsResponse {
+  contents: ContentsWithChildItems[];
+}
+
+export async function listContents(): Promise<ListContentsResponse> {
+  const request = await fetch('/api/db/list-contents', {
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return await request.json();
+}
+
+interface UnlinkContentsResponse {
+  message: string;
+}
 
 export async function unlinkContents(contentIds: number[]): Promise<UnlinkContentsResponse> {
   const request = await fetch('/api/db/unlink-contents', {
@@ -55,6 +72,26 @@ export async function unlinkContents(contentIds: number[]): Promise<UnlinkConten
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ contentIds }),
+  });
+
+  return await request.json();
+}
+
+interface BundleContentsResponse {
+  message: string;
+}
+
+export async function bundleContents(
+  contentIds: number[],
+  collectionIds: number[],
+  createdAt?: Date
+): Promise<BundleContentsResponse> {
+  const request = await fetch('/api/db/bundle-contents', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ contentIds, collectionIds, createdAt }),
   });
 
   return await request.json();

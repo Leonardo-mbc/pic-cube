@@ -1,19 +1,20 @@
 import clsx from 'clsx';
-import dynamic from 'next/dynamic';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { HiCursorClick } from 'react-icons/hi';
 import { ImImage } from 'react-icons/im';
 import { MdCancel } from 'react-icons/md';
-import { FaLayerGroup } from 'react-icons/fa';
+import { IoIosBrowsers } from 'react-icons/io';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { ContentsTableWithAliasPath } from '../../interfaces/db';
+import { ContentsTableWithCollections, ContentsWithChildItems } from '../../interfaces/db';
 import { Thumbnail } from './thumbnail';
 import {
   filteredContentsState,
   unlinkedContentIdsState,
   isSelectableState,
   selectedThumbsState,
+  selectedCollectionsState,
+  contentsState,
 } from './state';
 import { ToolParts } from './toolparts';
 import { ToolPartsSet } from './toolparts-set';
@@ -26,8 +27,10 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
   const THUMB_SIZES = ['small', 'medium', 'large'] as const;
   const [thumbSizeIndex, setThumbSizeIndex] = useState<number>(1);
   const [isSelectable, setIsSelectable] = useRecoilState(isSelectableState);
-  const [selectedThumbs, setSelectedThumbsState] = useRecoilState(selectedThumbsState);
+  const [selectedThumbs, setSelectedThumbs] = useRecoilState(selectedThumbsState);
+  const [selectedCollections, setSelectedCollections] = useRecoilState(selectedCollectionsState);
   const contents = useRecoilValue(filteredContentsState);
+  const setContents = useSetRecoilState(contentsState);
   const [unlinkedContentIds, setUnlinkedContentIds] = useRecoilState(unlinkedContentIdsState);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
@@ -38,21 +41,31 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
 
   function toggleSelectable() {
     if (isSelectable) {
-      setSelectedThumbsState([]);
+      setSelectedThumbs([]);
+      setSelectedCollections([]);
     }
     setIsSelectable(!isSelectable);
     setLastSelectedIndex(null);
   }
 
-  function onSelect(content: ContentsTableWithAliasPath, selectedIndex: number, shiftKey: boolean) {
+  function onSelect(content: ContentsWithChildItems, selectedIndex: number, shiftKey: boolean) {
     const newSelectedThumbs = [...selectedThumbs];
+    const newSelectedCollections = [...selectedCollections];
 
-    function toggleSelect(contentId: number) {
-      const index = newSelectedThumbs.indexOf(contentId);
-      if (0 <= index) {
-        newSelectedThumbs.splice(index, 1);
+    function toggleSelect(contentId: number, childContents: ContentsTableWithCollections[]) {
+      const thumbIndex = newSelectedThumbs.indexOf(contentId);
+      if (0 <= thumbIndex) {
+        newSelectedThumbs.splice(thumbIndex, 1);
       } else {
         newSelectedThumbs.push(contentId);
+      }
+
+      const [childContent, ...remainingChildContent] = childContents.filter(
+        (c) => c.id !== content.id
+      );
+
+      if (childContent) {
+        toggleSelect(childContent.id, remainingChildContent);
       }
     }
 
@@ -65,19 +78,39 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
       const direction = 0 < diff ? 1 : -1;
 
       for (let i = lastSelectedIndex; i !== selectedIndex; i += direction) {
-        toggleSelect(contents[i + direction].id);
+        const index = i + direction;
+        toggleSelect(contents[index].id, contents[index].contents);
       }
     } else {
-      toggleSelect(content.id);
+      toggleSelect(content.id, content.contents);
     }
 
-    setSelectedThumbsState(newSelectedThumbs);
+    // コレクション選択の処理、これは再帰処理のあとに記述する必要がある
+    if (content.collection_id) {
+      const CollectionIndex = newSelectedCollections.indexOf(content.collection_id);
+      if (0 <= CollectionIndex) {
+        newSelectedCollections.splice(CollectionIndex, 1);
+      } else {
+        newSelectedCollections.push(content.collection_id);
+      }
+    }
+
+    setSelectedThumbs(newSelectedThumbs);
+    setSelectedCollections(newSelectedCollections);
     setLastSelectedIndex(selectedIndex);
   }
 
   async function handleUnlink() {
     await dbRequest.unlinkContents(selectedThumbs);
     setUnlinkedContentIds([...unlinkedContentIds, ...selectedThumbs]);
+    toggleSelectable();
+  }
+
+  async function handleBundleContents() {
+    const parentContent = contents.find((content) => content.id === selectedThumbs[0]);
+    await dbRequest.bundleContents(selectedThumbs, selectedCollections, parentContent?.created_at);
+    const { contents: newContents } = await dbRequest.listContents();
+    setContents(newContents);
     toggleSelectable();
   }
 
@@ -99,10 +132,10 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
             {selectedThumbs.length}件を削除する
           </ToolParts>
           <ToolParts
-            icon={FaLayerGroup}
+            icon={IoIosBrowsers}
             color="blue"
-            onClick={() => {}}
-            disabled={!selectedThumbs.length}>
+            onClick={handleBundleContents}
+            disabled={selectedThumbs.length < 2}>
             差分コレクションを作る
           </ToolParts>
         </ToolPartsSet>

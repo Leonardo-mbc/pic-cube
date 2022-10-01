@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-hook/resize-observer": "^1.2.6",
     "chokidar": "^3.5.3",
     "clsx": "^1.2.1",
     "dayjs": "^1.11.5",

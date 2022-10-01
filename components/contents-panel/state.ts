@@ -1,7 +1,7 @@
 import { atom, selector } from 'recoil';
-import { ContentsTableWithAliasPath } from '../../interfaces/db';
+import { ContentsWithChildItems } from '../../interfaces/db';
 
-export const contentsState = atom<ContentsTableWithAliasPath[]>({
+export const contentsState = atom<ContentsWithChildItems[]>({
   key: 'atom:contents-panel:contents',
   default: [],
 });
@@ -11,7 +11,7 @@ export const unlinkedContentIdsState = atom<number[]>({
   default: [],
 });
 
-export const filteredContentsState = selector<ContentsTableWithAliasPath[]>({
+export const filteredContentsState = selector<ContentsWithChildItems[]>({
   key: 'atom:contents-panel:filteredContents',
   get: ({ get }) => {
     const contents = get(contentsState);
@@ -27,5 +27,10 @@ export const isSelectableState = atom<boolean>({
 
 export const selectedThumbsState = atom<number[]>({
   key: 'atom:contents-panel:selectedThumbs',
+  default: [],
+});
+
+export const selectedCollectionsState = atom<number[]>({
+  key: 'atom:contents-panel:selectedCollections',
   default: [],
 });

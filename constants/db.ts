@@ -2,20 +2,24 @@ import { INITIAL_CONFIGS } from './initial-configs';
 
 const TABLE_THUMBNAILS = 'thumbnails';
 const TABLE_CONTENTS = 'contents';
+const TABLE_COLLECTIONS = 'collections';
 const TABLE_TAGS = 'tags';
 const TABLE_ALBUMS = 'albums';
 const TABLE_DIRECTORIES = 'directories';
 const TABLE_CONFIGS = 'configs';
+const TABLE_CONTENTS_COLLECTIONS = 'contents_collections';
 const TABLE_CONTENTS_TAGS = 'contents_tags';
 const TABLE_CONTENTS_ALBUMS = 'contents_albums';
 
 export const TABLES = [
   TABLE_THUMBNAILS,
   TABLE_CONTENTS,
+  TABLE_COLLECTIONS,
   TABLE_TAGS,
   TABLE_ALBUMS,
   TABLE_DIRECTORIES,
   TABLE_CONFIGS,
+  TABLE_CONTENTS_COLLECTIONS,
   TABLE_CONTENTS_TAGS,
   TABLE_CONTENTS_ALBUMS,
 ] as const;
@@ -48,6 +52,17 @@ export const CREATE_TABLE: { [key in typeof TABLES[number]]: string } = {
       PRIMARY KEY (\`id\`),
       INDEX \`directory_id_index\` (\`directory_id\`),
       INDEX \`file_hash_index\` (\`file_hash\`)
+    );
+  `,
+  [TABLE_COLLECTIONS]: `
+    CREATE TABLE \`collections\` (
+      \`id\` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+      \`parent_id\` int(10) UNSIGNED NOT NULL,
+      \`quantity\` int(10) UNSIGNED NOT NULL,
+      \`unlink\` BOOL NOT NULL DEFAULT 0,
+      \`created_at\` timestamp(3) NOT NULL DEFAULT current_timestamp(3),
+      \`updated_at\` timestamp(3) NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3),
+      PRIMARY KEY (\`id\`)
     );
   `,
   [TABLE_TAGS]: `
@@ -87,6 +102,17 @@ export const CREATE_TABLE: { [key in typeof TABLES[number]]: string } = {
       \`updated_at\` timestamp(3) NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3),
       PRIMARY KEY (\`name\`)
     )`,
+  [TABLE_CONTENTS_COLLECTIONS]: `
+    CREATE TABLE \`contents_collections\` (
+      \`id\` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+      \`collection_id\` int(10) UNSIGNED NOT NULL,
+      \`content_id\` int(10) UNSIGNED NOT NULL,
+      \`order\` smallint(10) UNSIGNED NOT NULL,
+      \`created_at\` timestamp(3) NOT NULL DEFAULT current_timestamp(3),
+      \`updated_at\` timestamp(3) NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3),
+      PRIMARY KEY (\`id\`)
+    );
+  `,
   [TABLE_CONTENTS_TAGS]: `
     CREATE TABLE \`contents_tags\` (
       \`id\` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -113,7 +139,7 @@ export const CREATE_TABLE: { [key in typeof TABLES[number]]: string } = {
 
 export const INSERT_INITIAL_VALUES: string[] = [
   `
-    INSERT INTO \`configs\`
+    INSERT IGNORE INTO \`configs\`
     (\`name\`, \`value\`) VALUES ${Object.keys(INITIAL_CONFIGS)
       .map((key) => `(${[`'${key}'`, `'${JSON.stringify(INITIAL_CONFIGS[key])}'`].join(',')})`)
       .join(',')}

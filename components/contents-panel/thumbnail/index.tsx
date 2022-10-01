@@ -1,15 +1,15 @@
 import { useRecoilState } from 'recoil';
 import { isSelectableState } from '../state';
-import { ContentsTableWithAliasPath } from '../../../interfaces/db';
+import { ContentsWithChildItems } from '../../../interfaces/db';
 import styles from './styles.module.css';
 import { MouseEvent, useState } from 'react';
 import clsx from 'clsx';
 
 interface ImageProps {
-  content: ContentsTableWithAliasPath;
+  content: ContentsWithChildItems;
   isSelected: boolean;
   selectedOrder: number;
-  onSelect: (content: ContentsTableWithAliasPath, shiftKey: boolean) => void;
+  onSelect: (content: ContentsWithChildItems, shiftKey: boolean) => void;
 }
 
 const LONG_PRESS_DURATION = 400;
@@ -49,12 +49,18 @@ export const Thumbnail: React.FC<ImageProps> = ({
     <div className={clsx(styles.container)}>
       <a
         href={link}
-        className={clsx({ [styles.selected]: isSelected })}
+        className={clsx({
+          [styles.selected]: isSelected,
+          [styles.diffParent]: content.collection_id,
+        })}
         onClickCapture={checkEndLongPress}
         onMouseDownCapture={checkStartLongPress}>
         <section className={styles.rotateBorder} />
         <img src={thumbData} />
-        <section className={styles.orderDisplay}>{selectedOrder}</section>
+        <section className={styles.orderDisplay}>
+          {selectedOrder}
+          {content.collection_id && `~${selectedOrder + content.contents.length - 1}`}
+        </section>
         <div className={styles.label}>
           <span>{content.filename}</span>
         </div>
