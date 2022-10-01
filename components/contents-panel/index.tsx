@@ -61,7 +61,7 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
       }
 
       const [childContent, ...remainingChildContent] = childContents.filter(
-        (c) => c.id !== content.id
+        (c) => c.id !== contentId
       );
 
       if (childContent) {
