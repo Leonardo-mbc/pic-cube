@@ -20,6 +20,7 @@ import { ToolParts } from './toolparts';
 import { ToolPartsSet } from './toolparts-set';
 import * as dbRequest from '../../requests/db';
 import styles from './styles.module.css';
+import { PreviewScreen } from './PreviewScreen';
 
 interface ContentsPanelProps {}
 
@@ -163,6 +164,7 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
           />
         ))}
       </div>
+      <PreviewScreen />
     </>
   );
 };

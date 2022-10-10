@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import useResizeObserver from '@react-hook/resize-observer';
 import styles from './styles.module.css';
 
@@ -30,7 +30,7 @@ export const ToolPartsSet: React.FC<ToolPartsSetProps> = (props) => {
     }
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     measureWidth();
   }, [buttonRef.current, innerRef.current, props.isOpen]);
 

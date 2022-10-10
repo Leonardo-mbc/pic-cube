@@ -1,4 +1,5 @@
 import { useRecoilState } from 'recoil';
+import { useRouter } from 'next/router';
 import { isSelectableState } from '../state';
 import { ContentsWithChildItems } from '../../../interfaces/db';
 import styles from './styles.module.css';
@@ -20,6 +21,7 @@ export const Thumbnail: React.FC<ImageProps> = ({
   onSelect,
   selectedOrder,
 }) => {
+  const router = useRouter();
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timer>();
   const [triggerLongPress, setTriggerLongPress] = useState(false);
   const [isSelectable, setIsSelectable] = useRecoilState(isSelectableState);
@@ -37,12 +39,17 @@ export const Thumbnail: React.FC<ImageProps> = ({
     );
   }
   function checkEndLongPress(e: MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
     if (triggerLongPress || isSelectable) {
-      e.preventDefault();
       onSelect(content, e.shiftKey);
     }
-    clearTimeout(longPressTimer);
+
     setTriggerLongPress(false);
+
+    if (!isSelectable) {
+      clearTimeout(longPressTimer);
+      router.push(`?display=${content.id}`, undefined, { shallow: true });
+    }
   }
 
   return (

@@ -59,8 +59,9 @@
     }
 
     & img + section {
-      width: calc(var(--thumb-small) - 20px);
-      height: calc(var(--thumb-small) - 20px);
+      width: calc(var(--thumb-small) - 12px);
+      height: calc(var(--thumb-small) - 12px);
+      font-size: 30px;
     }
 
     & span {
@@ -89,8 +90,8 @@
     }
 
     & img + section {
-      width: calc(var(--thumb-large) - 20px);
-      height: calc(var(--thumb-large) - 20px);
+      width: calc(var(--thumb-large) - 12px);
+      height: calc(var(--thumb-large) - 12px);
     }
 
     & span {
