@@ -1,0 +1,57 @@
+.toolsParts {
+  display: inline-flex;
+  font-size: small;
+  cursor: pointer;
+  user-select: none;
+  align-items: center;
+  flex-shrink: 0;
+  word-break: keep-all;
+
+  &.likeButton {
+    background-color: var(--black-l);
+    color: var(--white);
+    border-radius: 50px;
+    padding: 0px 10px;
+
+    &.red {
+      background-color: var(--red);
+    }
+    &.blue {
+      background-color: var(--blue);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
+
+  &.upSVG1px {
+    & > svg {
+      margin-top: -1px;
+    }
+  }
+
+  &:not(:last-child) {
+    margin-right: 10px;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  & > svg {
+    margin-right: 5px;
+  }
+
+  & > span {
+    padding-top: 1px;
+  }
+
+  & .unlinkCount {
+    margin-top: -1px;
+  }
+}

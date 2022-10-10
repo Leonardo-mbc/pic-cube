@@ -30,9 +30,15 @@ export interface ContentsTable {
   updated_at: Date;
 }
 
-export interface ContentsTableWithAliasPath extends ContentsTable {
+export interface ContentsTableWithCollections extends ContentsTable {
   alias_path: string;
   thumbnail: { type: string; data: Uint8Array };
+  collection_id: number | null;
+  order: number;
+}
+
+export interface ContentsWithChildItems extends ContentsTableWithCollections {
+  contents: ContentsTableWithCollections[];
 }
 
 export interface Configs {
@@ -40,4 +46,14 @@ export interface Configs {
   value: string;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface UnlinkContentsParams {
+  contentIds: number[];
+}
+
+export interface BundleContentsParams {
+  contentIds: number[];
+  collectionIds: number[];
+  createdAt?: Date;
 }
