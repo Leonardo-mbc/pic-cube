@@ -24,6 +24,7 @@
 
   &.originalSize {
     display: block;
+    text-align: center;
     cursor: url('/images/icons/shrink-black.png') 16 16, w-resize;
 
     & .image {
