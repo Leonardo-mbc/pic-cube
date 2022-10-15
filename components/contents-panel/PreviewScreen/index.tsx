@@ -70,7 +70,9 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
     setIsOriginalSize(false);
     setChildContentIndex(0);
 
-    router.back();
+    if (router.query.display) {
+      router.back();
+    }
   }
 
   function handlePagination(e: React.MouseEvent<HTMLDivElement>, direction: 'prev' | 'next') {

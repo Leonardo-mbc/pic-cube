@@ -69,24 +69,28 @@ watcher.on('all', async (event, path) => {
           }
         }
 
-        const [thumbBuffer, { insertId }] = await Promise.all([
-          makeThumbnail(path),
-          mysql.query('INSERT INTO contents SET ?;', {
-            directory_id: directoryId,
-            path: relativePath,
-            filename: filename,
-            file_hash: fileHash,
-            last_accessed_at: lastAccessedAt,
-            last_modified_at: lastModifiedAt,
-            last_changed_at: lastChangedAt,
-            created_at: createdAt,
-          }),
-        ]);
+        try {
+          const [thumbBuffer, { insertId }] = await Promise.all([
+            makeThumbnail(path),
+            mysql.query('INSERT INTO contents SET ?;', {
+              directory_id: directoryId,
+              path: relativePath,
+              filename: filename,
+              file_hash: fileHash,
+              last_accessed_at: lastAccessedAt,
+              last_modified_at: lastModifiedAt,
+              last_changed_at: lastChangedAt,
+              created_at: createdAt,
+            }),
+          ]);
 
-        await mysql.query('INSERT INTO thumbnails SET ?;', {
-          content_id: insertId,
-          data: thumbBuffer,
-        });
+          await mysql.query('INSERT INTO thumbnails SET ?;', {
+            content_id: insertId,
+            data: thumbBuffer,
+          });
+        } catch (e) {
+          console.log('MAKE_THUMBNAIL_ERROR', e);
+        }
       }
 
       break;
