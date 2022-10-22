@@ -61,9 +61,12 @@ export const Thumbnail: React.FC<ImageProps> = ({
           [styles.diffParent]: content.collection_id,
         })}
         onClickCapture={checkEndLongPress}
-        onMouseDownCapture={checkStartLongPress}>
+        onMouseDownCapture={checkStartLongPress}
+      >
         <section className={styles.rotateBorder} />
-        <img src={thumbData} />
+        <picture>
+          <img src={thumbData} alt={content.filename} />
+        </picture>
         <section className={styles.orderDisplay}>
           {selectedOrder}
           {content.collection_id && `~${selectedOrder + content.contents.length - 1}`}
