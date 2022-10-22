@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Element, scroller, animateScroll as scroll } from 'react-scroll';
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from 'react-icons/ai';
@@ -23,16 +23,27 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
   const hasPrevChildContent = !!content?.contents[childContentIndex - 1];
   const hasNextChildContent = !!content?.contents[childContentIndex + 1];
 
+  const displayId = router.query.display;
+
+  const close = useCallback(() => {
+    setDispContentId(undefined);
+    setIsOriginalSize(false);
+    setChildContentIndex(0);
+
+    if (displayId) {
+      router.back();
+    }
+  }, [displayId, router]);
+
   useEffect(() => {
-    const id = router.query.display;
-    if (id) {
-      const contentId = parseInt(Array.isArray(id) ? id[0] : id);
+    if (displayId) {
+      const contentId = parseInt(Array.isArray(displayId) ? displayId[0] : displayId);
       setDispContentId(contentId);
       setChildContentIndex(0);
     } else {
       close();
     }
-  }, [router.query.display]);
+  }, [close, displayId]);
 
   useEffect(() => {
     const childContent = content?.contents[childContentIndex];
@@ -49,7 +60,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
         offset,
       });
     }
-  }, [childContentIndex]);
+  }, [content, childContentIndex]);
 
   function setChildContent(childContent: ContentsTableWithCollections) {
     if (imageRef.current) {
@@ -62,16 +73,6 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
 
     if (imageRef.current) {
       setIsOriginalSize(!isOriginalSize);
-    }
-  }
-
-  function close() {
-    setDispContentId(undefined);
-    setIsOriginalSize(false);
-    setChildContentIndex(0);
-
-    if (router.query.display) {
-      router.back();
     }
   }
 
@@ -108,35 +109,49 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
         [styles.show]: content,
         [styles.originalSize]: isOriginalSize,
       })}
-      onClick={isOriginalSize ? handleFullScreen : close}>
+      onClick={isOriginalSize ? handleFullScreen : close}
+    >
       {content && (
         <>
-          <img ref={imageRef} className={styles.image} src={makeContentPath(content)} />
+          <picture>
+            <img
+              ref={imageRef}
+              className={styles.image}
+              src={makeContentPath(content)}
+              alt={content.filename}
+            />
+          </picture>
           <div
             className={clsx(styles.pagination, styles.prev, {
               [styles.showPagination]: prevContent || hasPrevChildContent,
             })}
-            onClick={(e) => handlePagination(e, 'prev')}></div>
+            onClick={(e) => handlePagination(e, 'prev')}
+          ></div>
           <div
             className={clsx(styles.pagination, styles.next, {
               [styles.showPagination]: nextContent || hasNextChildContent,
             })}
-            onClick={(e) => handlePagination(e, 'next')}></div>
+            onClick={(e) => handlePagination(e, 'next')}
+          ></div>
           {content.contents.length > 0 && !isOriginalSize && (
             <div
               ref={childContainerRef}
               className={styles.childContents}
-              onClick={(e) => e.stopPropagation()}>
+              onClick={(e) => e.stopPropagation()}
+            >
               {content.contents.map((content, index) => {
                 const base64String = Buffer.from(content.thumbnail.data).toString('base64');
                 const thumbData = `data:image/jpeg;base64,${base64String}`;
                 return (
                   <Element key={index} name={`ps-child-${index}`} className={styles.scrollElement}>
-                    <img
-                      className={clsx({ [styles.selected]: childContentIndex === index })}
-                      src={thumbData}
-                      onClick={() => setChildContentIndex(index)}
-                    />
+                    <picture>
+                      <img
+                        className={clsx({ [styles.selected]: childContentIndex === index })}
+                        src={thumbData}
+                        onClick={() => setChildContentIndex(index)}
+                        alt={`${content.filename}_${index}`}
+                      />
+                    </picture>
                   </Element>
                 );
               })}

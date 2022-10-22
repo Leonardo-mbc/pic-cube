@@ -7,7 +7,13 @@
     "dev": "next dev & yarn serve-static",
     "build": "next build",
     "start": "next start & yarn serve-static",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky install"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "dependencies": {
     "@react-hook/resize-observer": "^1.2.6",
@@ -36,6 +42,10 @@
     "@types/react-scroll": "^1.8.4",
     "eslint": "8.21.0",
     "eslint-config-next": "12.2.3",
+    "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
     "sass": "^1.54.3",
     "typescript": "4.7.4"
   }

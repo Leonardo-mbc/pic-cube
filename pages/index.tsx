@@ -42,7 +42,7 @@ const Index: NextPage<IndexProps> = (props) => {
 
   useEffect(() => {
     setContents(props.contents);
-  }, [props.contents]);
+  }, [setContents, props.contents]);
 
   return (
     <div className={styles.container}>
