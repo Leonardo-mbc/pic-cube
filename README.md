@@ -1,5 +1,11 @@
 # pic-cube
 
+## Setup [nvm](https://github.com/nvm-sh/nvm) and specify node version
+
+```bash
+nvm use
+```
+
 ## For use on a local machine
 
 ```bash
