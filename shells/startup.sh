@@ -3,4 +3,4 @@
 mkdir imports
 chmod 755 ./imports/*
 
-yarn start
+yarn workspace pic-cube-frontend start

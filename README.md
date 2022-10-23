@@ -22,8 +22,8 @@ For VMs, the directory to be used must be mapped under /app/imports/ on the VM.
 A Docker example is shown below.
 
 ```bash
-docker build -t pic-cube .
-docker run -p 3000:3000 -v /volumes/sample-dir:/app/impors/sample-dir pic-cube
+docker build -t pic-cube-frontend -f docker/Dockerfile.frontend .
+docker run -p 3000:3000 -v /volumes/sample-dir:/app/imports/sample-dir pic-cube-frontend
 ```
 
 ## For development
