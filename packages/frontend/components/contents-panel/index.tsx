@@ -124,19 +124,22 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
             <ToolParts icon={isSelectable ? MdCancel : HiCursorClick} onClick={toggleSelectable}>
               {isSelectable ? '選択キャンセル' : '選択する'}
             </ToolParts>
-          }>
+          }
+        >
           <ToolParts
             icon={RiDeleteBin5Fill}
             color="red"
             onClick={handleUnlink}
-            disabled={!selectedThumbs.length}>
+            disabled={!selectedThumbs.length}
+          >
             {selectedThumbs.length}件を削除する
           </ToolParts>
           <ToolParts
             icon={IoIosBrowsers}
             color="blue"
             onClick={handleBundleContents}
-            disabled={selectedThumbs.length < 2}>
+            disabled={selectedThumbs.length < 2}
+          >
             差分コレクションを作る
           </ToolParts>
         </ToolPartsSet>
@@ -153,7 +156,8 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
           { [styles.thumbSmall]: THUMB_SIZES[thumbSizeIndex] === 'small' },
           { [styles.thumbLarge]: THUMB_SIZES[thumbSizeIndex] === 'large' },
           { [styles.selectable]: isSelectable }
-        )}>
+        )}
+      >
         {contents.map((content, index) => (
           <Thumbnail
             key={index}

@@ -23,7 +23,8 @@ export const ToolParts: React.FC<ToolPartsProps> = (props) => {
         [styles[props.color!]]: props.color,
         [styles.disabled]: props.disabled,
       })}
-      onClick={handleClick}>
+      onClick={handleClick}
+    >
       <props.icon />
       <span>{props.children}</span>
     </div>
