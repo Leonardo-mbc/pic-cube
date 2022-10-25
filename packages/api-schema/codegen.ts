@@ -5,7 +5,7 @@ const config: CodegenConfig = {
   schema: './graphql/types/**/*.graphql',
   generates: {
     './graphql/generated/server.type.ts': {
-      plugins: ['typescript', 'typescript-resolvers', 'typescript-operations'],
+      plugins: ['typescript', 'typescript-resolvers'],
     },
     // HACK: Direct output because TS of external packages cannot be transpile
     '../frontend/graphql/generated/client.type.ts': {
