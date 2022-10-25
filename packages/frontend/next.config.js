@@ -1,3 +1,5 @@
+const Dotenv = require('dotenv-webpack');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -9,6 +11,10 @@ const nextConfig = {
         destination: 'http://localhost:8080/:path*',
       },
     ];
+  },
+  webpack: (config) => {
+    config.plugins.push(new Dotenv());
+    return config;
   },
 };
 
