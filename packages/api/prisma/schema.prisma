@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Directory {
+  id Int @id @default(autoincrement())
+  label String
+  path String @unique
+  aliasPath String @unique
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+  content Content[]
+}
+
+model Content {
+  id Int @id @default(autoincrement())
+  directory Directory @relation(fields: [directoryId], references: [id])
+  directoryId Int
+  path String
+  filename String
+  fileHash String
+  unlink Boolean @default(false)
+  lastAccessedAt DateTime
+  lastModifiedAt DateTime
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+}
