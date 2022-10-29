@@ -12,8 +12,9 @@ datasource db {
 
 model Content {
   id Int @id @default(autoincrement())
+  name String
   type ContentType
-  removed Boolean
+  removed Boolean @default(false)
   createdAt DateTime
   updatedAt DateTime @updatedAt
   collection Collection[]
@@ -35,6 +36,11 @@ model Collection {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int
+  lastAccessedAt DateTime
+  lastModifiedAt DateTime
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+  collectionContents CollectionContent[]
 
   @@map("collections")
 }
@@ -43,6 +49,7 @@ model CollectionContent {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int @unique
+  collection Collection @relation(fields: [collectionId], references: [id])
   collectionId Int @unique
   createdAt DateTime
   updatedAt DateTime @updatedAt
@@ -54,11 +61,11 @@ model Album {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int
-  name String
   lastAccessedAt DateTime
   lastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
+  albumContents AlbumContent[]
 
   @@map("albums")
 }
@@ -67,6 +74,8 @@ model AlbumContent {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int
+  album Album @relation(fields: [albumId], references: [id])
+  albumId Int
   createdAt DateTime
   updatedAt DateTime @updatedAt
 
@@ -77,6 +86,10 @@ model File {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int
+  path String
+  filename String
+  lastAccessedAt DateTime
+  lastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
 
