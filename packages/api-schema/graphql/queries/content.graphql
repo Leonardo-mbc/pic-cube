@@ -1,0 +1,11 @@
+query getContentById($id: Int!) {
+  Content(id: $id) {
+    id
+    name
+    type
+    file {
+      path
+      filename
+    }
+  }
+}

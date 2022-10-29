@@ -1,16 +1,20 @@
 import { Resolvers } from '@pic-cube/api-schema/graphql/generated/server.type';
 import {
-  createDirectoryResolver,
-  getDirectoriesResolver,
-  getDirectoryResolver,
-} from './directory.resolver';
+  createContentAlbumResolver,
+  createContentCollectionResolver,
+  createContentFileResolver,
+  geContentResolver,
+  getContentsResolver,
+} from './content.resolver';
 
 export const resolvers: Resolvers = {
   Query: {
-    Directory: (_, args) => getDirectoryResolver(args),
-    Directories: (_, args) => getDirectoriesResolver(args),
+    Content: (_, args) => geContentResolver(args),
+    Contents: (_, args) => getContentsResolver(args),
   },
   Mutation: {
-    createDirectory: (_, args) => createDirectoryResolver(args),
+    createCollection: (_, args) => createContentCollectionResolver(args),
+    createAlbum: (_, args) => createContentAlbumResolver(args),
+    createFile: (_, args) => createContentFileResolver(args),
   },
 };

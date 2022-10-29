@@ -1,5 +1,0 @@
-query getDirectory($id: Int!) {
-  Directory(id: $id) {
-    id
-  }
-}

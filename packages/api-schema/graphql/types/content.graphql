@@ -1,0 +1,51 @@
+enum ContentType {
+  COLLECTION
+  ALBUM
+  FILE
+}
+
+type Collection {
+  id: Int!
+  lastAccessedAt: Date!
+  lastModifiedAt: Date!
+}
+
+type Album {
+  id: Int!
+  lastAccessedAt: Date!
+  lastModifiedAt: Date!
+}
+
+type File {
+  id: Int!
+  path: String!
+  filename: String!
+  lastAccessedAt: Date!
+  lastModifiedAt: Date!
+}
+
+type Content {
+  id: Int!
+  name: String!
+  type: ContentType!
+  collection: Collection
+  album: Album
+  file: File
+}
+
+type Query {
+  Content(id: Int!): Content!
+  Contents(limit: Int, offset: Int): [Content!]
+}
+
+type Mutation {
+  createCollection(name: String!): Content!
+  createAlbum(name: String!): Content!
+  createFile(
+    name: String!
+    path: String!
+    filename: String!
+    lastAccessedAt: Date!
+    lastModifiedAt: Date!
+  ): Content!
+}
