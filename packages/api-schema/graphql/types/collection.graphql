@@ -1,7 +1,3 @@
-type Query {
-  CollectionContents(collectionId: Int!): [Content!]
-}
-
 type Mutation {
   attachContentToCollection(collectionId: Int!, contentId: Int!, order: Int): Void
   detachContentFromCollection(collectionId: Int!, contentId: Int!): Void
