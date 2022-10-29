@@ -6,28 +6,28 @@ enum ContentType {
 
 type Collection {
   id: Int!
-  lastAccessedAt: Date!
-  lastModifiedAt: Date!
+  lastModifiedAt: DateTime!
 }
 
 type Album {
   id: Int!
-  lastAccessedAt: Date!
-  lastModifiedAt: Date!
+  lastModifiedAt: DateTime!
 }
 
 type File {
   id: Int!
   path: String!
   filename: String!
-  lastAccessedAt: Date!
-  lastModifiedAt: Date!
+  fileLastAccessedAt: DateTime!
+  fileLastModifiedAt: DateTime!
 }
 
 type Content {
   id: Int!
   name: String!
   type: ContentType!
+  removed: Boolean!
+  lastAccessedAt: DateTime!
   collection: Collection
   album: Album
   file: File
@@ -35,7 +35,9 @@ type Content {
 
 type Query {
   Content(id: Int!): Content!
-  Contents(limit: Int, offset: Int): [Content!]
+  Contents(limit: Int, offset: Int, removed: Boolean): [Content!]
+  ContentsInCollection(collectionId: Int!): [Content!]
+  ContentsInAlbum(albumId: Int!): [Content!]
 }
 
 type Mutation {
@@ -45,7 +47,8 @@ type Mutation {
     name: String!
     path: String!
     filename: String!
-    lastAccessedAt: Date!
-    lastModifiedAt: Date!
+    lastAccessedAt: DateTime!
+    lastModifiedAt: DateTime!
   ): Content!
+  removeContent(id: Int!): Content!
 }

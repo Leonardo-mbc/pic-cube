@@ -6,7 +6,9 @@ CREATE TABLE `contents` (
     `removed` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
+    `lastAccessedAt` DATETIME(3) NOT NULL,
 
+    INDEX `contents_lastAccessedAt_idx`(`lastAccessedAt`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -14,11 +16,11 @@ CREATE TABLE `contents` (
 CREATE TABLE `collections` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
-    `lastAccessedAt` DATETIME(3) NOT NULL,
     `lastModifiedAt` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `collections_contentId_key`(`contentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -27,11 +29,13 @@ CREATE TABLE `collectionContents` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
     `collectionId` INTEGER NOT NULL,
+    `order` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `collectionContents_contentId_key`(`contentId`),
     UNIQUE INDEX `collectionContents_collectionId_key`(`collectionId`),
+    UNIQUE INDEX `collectionContents_contentId_collectionId_key`(`contentId`, `collectionId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -39,11 +43,11 @@ CREATE TABLE `collectionContents` (
 CREATE TABLE `albums` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
-    `lastAccessedAt` DATETIME(3) NOT NULL,
     `lastModifiedAt` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `albums_contentId_key`(`contentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -55,6 +59,7 @@ CREATE TABLE `albumContents` (
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `albumContents_contentId_albumId_key`(`contentId`, `albumId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -64,11 +69,13 @@ CREATE TABLE `files` (
     `contentId` INTEGER NOT NULL,
     `path` VARCHAR(191) NOT NULL,
     `filename` VARCHAR(191) NOT NULL,
-    `lastAccessedAt` DATETIME(3) NOT NULL,
-    `lastModifiedAt` DATETIME(3) NOT NULL,
+    `fileLastAccessedAt` DATETIME(3) NOT NULL,
+    `fileLastModifiedAt` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `files_contentId_key`(`contentId`),
+    UNIQUE INDEX `files_path_filename_key`(`path`, `filename`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -17,12 +18,14 @@ model Content {
   removed Boolean @default(false)
   createdAt DateTime
   updatedAt DateTime @updatedAt
+  lastAccessedAt DateTime
   collection Collection[]
   contents CollectionContent[]
   album Album[]
   albums AlbumContent[]
   file File[]
 
+  @@index([lastAccessedAt])
   @@map("contents")
 }
 
@@ -35,8 +38,7 @@ enum ContentType {
 model Collection {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
-  contentId Int
-  lastAccessedAt DateTime
+  contentId Int @unique
   lastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
@@ -51,17 +53,18 @@ model CollectionContent {
   contentId Int @unique
   collection Collection @relation(fields: [collectionId], references: [id])
   collectionId Int @unique
+  order Int
   createdAt DateTime
   updatedAt DateTime @updatedAt
 
+  @@unique([contentId, collectionId])
   @@map("collectionContents")
 }
 
 model Album {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
-  contentId Int
-  lastAccessedAt DateTime
+  contentId Int @unique
   lastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
@@ -79,19 +82,21 @@ model AlbumContent {
   createdAt DateTime
   updatedAt DateTime @updatedAt
 
+  @@unique([contentId, albumId])
   @@map("albumContents")
 }
 
 model File {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
-  contentId Int
+  contentId Int @unique
   path String
   filename String
-  lastAccessedAt DateTime
-  lastModifiedAt DateTime
+  fileLastAccessedAt DateTime
+  fileLastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
 
+  @@unique([path, filename])
   @@map("files")
 }

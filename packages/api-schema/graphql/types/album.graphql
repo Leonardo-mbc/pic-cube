@@ -1,0 +1,8 @@
+type Query {
+  AlbumContents(albumId: Int!): [Album!]
+}
+
+type Mutation {
+  attachContentToAlbum(albumId: Int!, contentId: Int!): Void
+  detachContentFromAlbum(albumId: Int!, contentId: Int!): Void
+}

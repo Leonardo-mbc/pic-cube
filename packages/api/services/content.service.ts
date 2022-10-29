@@ -14,14 +14,41 @@ export async function getContentById(params: GetContentByIdParams) {
 interface GetContentsParams {
   limit?: number;
   offset?: number;
+  removed?: boolean;
 }
 
 export async function getContents(params: GetContentsParams) {
   return await prisma.content.findMany({
     take: params.limit,
     skip: params.offset,
+    where: { removed: params.removed },
     include: { collection: true, album: true, file: true },
+    orderBy: { lastAccessedAt: 'desc' },
   });
+}
+
+interface GetContentsInCollectionParams {
+  collectionId: number;
+}
+
+export async function getContentsInCollection(params: GetContentsInCollectionParams) {
+  const collectionContents = await prisma.collectionContent.findMany({
+    where: { collectionId: params.collectionId },
+    include: { content: true },
+  });
+  return collectionContents.map((collectionContent) => collectionContent.content);
+}
+
+interface GetContentsInAlbumParams {
+  albumId: number;
+}
+
+export async function getContentsInAlbum(params: GetContentsInAlbumParams) {
+  const albumContents = await prisma.albumContent.findMany({
+    where: { albumId: params.albumId },
+    include: { content: true },
+  });
+  return albumContents.map((albumContent) => albumContent.content);
 }
 
 interface CreateContentAsCollectionParams {
@@ -35,6 +62,7 @@ export async function createContentAsCollection(params: CreateContentAsCollectio
       name: params.name,
       type: 'COLLECTION',
       createdAt,
+      lastAccessedAt: createdAt,
       collection: {
         create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt, createdAt }],
       },
@@ -54,6 +82,7 @@ export async function createContentAsAlbum(params: CreateContentAsAlbumParams) {
       name: params.name,
       type: 'COLLECTION',
       createdAt,
+      lastAccessedAt: createdAt,
       album: {
         create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt, createdAt }],
       },
@@ -77,13 +106,14 @@ export async function createContentAsFile(params: CreateContentAsFileParams) {
       name: params.name,
       type: 'FILE',
       createdAt,
+      lastAccessedAt: createdAt,
       file: {
         create: [
           {
             path: params.path,
             filename: params.filename,
-            lastAccessedAt: params.lastAccessedAt,
-            lastModifiedAt: params.lastModifiedAt,
+            fileLastAccessedAt: params.lastAccessedAt,
+            fileLastModifiedAt: params.lastModifiedAt,
             createdAt,
           },
         ],
@@ -91,4 +121,12 @@ export async function createContentAsFile(params: CreateContentAsFileParams) {
     },
     include: { file: true },
   });
+}
+
+interface RemoveContentPramas {
+  id: number;
+}
+
+export async function removeContent(params: RemoveContentPramas) {
+  return await prisma.content.update({ data: { removed: true }, where: { id: params.id } });
 }
