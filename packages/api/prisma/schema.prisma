@@ -10,26 +10,75 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Directory {
-  id Int @id @default(autoincrement())
-  label String
-  path String @unique
-  aliasPath String @unique
-  createdAt DateTime
-  updatedAt DateTime @updatedAt
-  content Content[]
-}
-
 model Content {
   id Int @id @default(autoincrement())
-  directory Directory @relation(fields: [directoryId], references: [id])
-  directoryId Int
-  path String
-  filename String
-  fileHash String
-  unlink Boolean @default(false)
+  type ContentType
+  removed Boolean
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+  collection Collection[]
+  contents CollectionContent[]
+  album Album[]
+  albums AlbumContent[]
+  file File[]
+
+  @@map("contents")
+}
+
+enum ContentType {
+  COLLECTION
+  ALBUM
+  FILE
+}
+
+model Collection {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int
+
+  @@map("collections")
+}
+
+model CollectionContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int @unique
+  collectionId Int @unique
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+
+  @@map("collectionContents")
+}
+
+model Album {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int
+  name String
   lastAccessedAt DateTime
   lastModifiedAt DateTime
   createdAt DateTime
   updatedAt DateTime @updatedAt
+
+  @@map("albums")
+}
+
+model AlbumContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+
+  @@map("albumContents")
+}
+
+model File {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+
+  @@map("files")
 }
