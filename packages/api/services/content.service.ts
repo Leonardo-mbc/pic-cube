@@ -113,10 +113,10 @@ export async function createContentAsFile(params: CreateContentAsFileParams) {
   });
 }
 
-interface RemoveContentPramas {
+interface RemoveContentParams {
   id: number;
 }
 
-export async function removeContent(params: RemoveContentPramas) {
+export async function removeContent(params: RemoveContentParams) {
   return await prisma.content.update({ data: { removed: true }, where: { id: params.id } });
 }
