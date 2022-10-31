@@ -1,0 +1,4 @@
+type Mutation {
+  attachContentToCollection(collectionId: Int!, contentId: Int!, order: Int): Void
+  detachContentFromCollection(collectionId: Int!, contentId: Int!): Void
+}

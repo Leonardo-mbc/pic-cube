@@ -11,6 +11,7 @@
     "@graphql-codegen/typescript": "2.8.0",
     "@graphql-codegen/typescript-graphql-request": "^4.5.7",
     "@graphql-codegen/typescript-operations": "2.5.5",
-    "@graphql-codegen/typescript-resolvers": "2.7.5"
+    "@graphql-codegen/typescript-resolvers": "2.7.5",
+    "graphql-scalars": "^1.20.0"
   }
 }

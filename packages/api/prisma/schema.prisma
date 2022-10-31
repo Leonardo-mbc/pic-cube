@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -10,26 +11,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Directory {
-  id Int @id @default(autoincrement())
-  label String
-  path String @unique
-  aliasPath String @unique
-  createdAt DateTime
-  updatedAt DateTime @updatedAt
-  content Content[]
-}
-
 model Content {
   id Int @id @default(autoincrement())
-  directory Directory @relation(fields: [directoryId], references: [id])
-  directoryId Int
+  name String
+  type ContentType
+  removed Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastAccessedAt DateTime @default(now())
+  collection Collection[]
+  contents CollectionContent[]
+  album Album[]
+  albums AlbumContent[]
+  file File[]
+
+  @@index([lastAccessedAt])
+  @@map("contents")
+}
+
+enum ContentType {
+  COLLECTION
+  ALBUM
+  FILE
+}
+
+model Collection {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int @unique
+  lastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  collectionContents CollectionContent[]
+
+  @@map("collections")
+}
+
+model CollectionContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int @unique
+  collection Collection @relation(fields: [collectionId], references: [id])
+  collectionId Int @unique
+  order Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contentId, collectionId])
+  @@map("collectionContents")
+}
+
+model Album {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int @unique
+  lastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  albumContents AlbumContent[]
+
+  @@map("albums")
+}
+
+model AlbumContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int
+  album Album @relation(fields: [albumId], references: [id])
+  albumId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contentId, albumId])
+  @@map("albumContents")
+}
+
+model File {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id])
+  contentId Int @unique
   path String
   filename String
-  fileHash String
-  unlink Boolean @default(false)
-  lastAccessedAt DateTime
-  lastModifiedAt DateTime
-  createdAt DateTime
+  fileLastAccessedAt DateTime @default(now())
+  fileLastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([path, filename])
+  @@map("files")
 }

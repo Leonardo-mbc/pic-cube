@@ -1,0 +1,4 @@
+type Mutation {
+  attachContentToAlbum(albumId: Int!, contentId: Int!): Void
+  detachContentFromAlbum(albumId: Int!, contentId: Int!): Void
+}
