@@ -18,7 +18,7 @@ model Content {
   removed Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  lastAccessedAt DateTime
+  lastAccessedAt DateTime @default(now())
   collection Collection[]
   contents CollectionContent[]
   album Album[]
@@ -39,7 +39,7 @@ model Collection {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int @unique
-  lastModifiedAt DateTime
+  lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   collectionContents CollectionContent[]
@@ -65,7 +65,7 @@ model Album {
   id Int @id @default(autoincrement())
   content Content @relation(fields: [contentId], references: [id])
   contentId Int @unique
-  lastModifiedAt DateTime
+  lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   albumContents AlbumContent[]
@@ -92,8 +92,8 @@ model File {
   contentId Int @unique
   path String
   filename String
-  fileLastAccessedAt DateTime
-  fileLastModifiedAt DateTime
+  fileLastAccessedAt DateTime @default(now())
+  fileLastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
