@@ -56,14 +56,12 @@ interface CreateContentAsCollectionParams {
 }
 
 export async function createContentAsCollection(params: CreateContentAsCollectionParams) {
-  const createdAt = new Date();
   return await prisma.content.create({
     data: {
       name: params.name,
       type: 'COLLECTION',
-      lastAccessedAt: createdAt,
       collection: {
-        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt }],
+        create: [{}],
       },
     },
     include: { collection: true },
@@ -75,14 +73,12 @@ interface CreateContentAsAlbumParams {
 }
 
 export async function createContentAsAlbum(params: CreateContentAsAlbumParams) {
-  const createdAt = new Date();
   return await prisma.content.create({
     data: {
       name: params.name,
       type: 'COLLECTION',
-      lastAccessedAt: createdAt,
       album: {
-        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt }],
+        create: [{}],
       },
     },
     include: { album: true },
@@ -98,12 +94,10 @@ interface CreateContentAsFileParams {
 }
 
 export async function createContentAsFile(params: CreateContentAsFileParams) {
-  const createdAt = new Date();
   return await prisma.content.create({
     data: {
       name: params.name,
       type: 'FILE',
-      lastAccessedAt: createdAt,
       file: {
         create: [
           {
