@@ -47,7 +47,6 @@ export async function attachContentToCollection(params: AttachContentToCollectio
           collectionId: params.collectionId,
           contentId: params.contentId,
           order: params.order || 0,
-          createdAt: new Date(),
         },
       });
     },

@@ -10,7 +10,6 @@ export async function attachContentToAlbum(params: AttachContentToAlbumParams) {
     data: {
       albumId: params.albumId,
       contentId: params.contentId,
-      createdAt: new Date(),
     },
   });
 }

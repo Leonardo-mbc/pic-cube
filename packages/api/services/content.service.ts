@@ -61,10 +61,9 @@ export async function createContentAsCollection(params: CreateContentAsCollectio
     data: {
       name: params.name,
       type: 'COLLECTION',
-      createdAt,
       lastAccessedAt: createdAt,
       collection: {
-        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt, createdAt }],
+        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt }],
       },
     },
     include: { collection: true },
@@ -81,10 +80,9 @@ export async function createContentAsAlbum(params: CreateContentAsAlbumParams) {
     data: {
       name: params.name,
       type: 'COLLECTION',
-      createdAt,
       lastAccessedAt: createdAt,
       album: {
-        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt, createdAt }],
+        create: [{ lastAccessedAt: createdAt, lastModifiedAt: createdAt }],
       },
     },
     include: { album: true },
@@ -105,7 +103,6 @@ export async function createContentAsFile(params: CreateContentAsFileParams) {
     data: {
       name: params.name,
       type: 'FILE',
-      createdAt,
       lastAccessedAt: createdAt,
       file: {
         create: [
@@ -114,7 +111,6 @@ export async function createContentAsFile(params: CreateContentAsFileParams) {
             filename: params.filename,
             fileLastAccessedAt: params.lastAccessedAt,
             fileLastModifiedAt: params.lastModifiedAt,
-            createdAt,
           },
         ],
       },
