@@ -4,8 +4,8 @@ CREATE TABLE `contents` (
     `name` VARCHAR(191) NOT NULL,
     `type` ENUM('COLLECTION', 'ALBUM', 'FILE') NOT NULL,
     `removed` BOOLEAN NOT NULL DEFAULT false,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     `lastAccessedAt` DATETIME(3) NOT NULL,
 
     INDEX `contents_lastAccessedAt_idx`(`lastAccessedAt`),
@@ -17,8 +17,8 @@ CREATE TABLE `collections` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
     `lastModifiedAt` DATETIME(3) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `collections_contentId_key`(`contentId`),
     PRIMARY KEY (`id`)
@@ -30,8 +30,8 @@ CREATE TABLE `collectionContents` (
     `contentId` INTEGER NOT NULL,
     `collectionId` INTEGER NOT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `collectionContents_contentId_key`(`contentId`),
     UNIQUE INDEX `collectionContents_collectionId_key`(`collectionId`),
@@ -44,8 +44,8 @@ CREATE TABLE `albums` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
     `lastModifiedAt` DATETIME(3) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `albums_contentId_key`(`contentId`),
     PRIMARY KEY (`id`)
@@ -56,8 +56,8 @@ CREATE TABLE `albumContents` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `contentId` INTEGER NOT NULL,
     `albumId` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `albumContents_contentId_albumId_key`(`contentId`, `albumId`),
     PRIMARY KEY (`id`)
@@ -71,8 +71,8 @@ CREATE TABLE `files` (
     `filename` VARCHAR(191) NOT NULL,
     `fileLastAccessedAt` DATETIME(3) NOT NULL,
     `fileLastModifiedAt` DATETIME(3) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `files_contentId_key`(`contentId`),
     UNIQUE INDEX `files_path_filename_key`(`path`, `filename`),
