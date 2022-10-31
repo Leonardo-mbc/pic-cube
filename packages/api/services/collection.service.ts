@@ -27,7 +27,7 @@ export async function attachContentToCollection(params: AttachContentToCollectio
         throw new Error('Invalid order');
       }
       if (order !== collectionContents.length) {
-        // Update the order of other collectionContents
+        // Update the order of exits collectionContents
         let nextOrder = order + 1;
         const followingCollectionContents = collectionContents.slice(
           order,
