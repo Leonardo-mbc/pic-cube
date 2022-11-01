@@ -1,4 +1,4 @@
-# @pic-cube/api
+# @pic-cube/backend
 
 ## Setup for development
 
