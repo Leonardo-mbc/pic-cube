@@ -39,3 +39,4 @@ yarn-error.log*
 /packages/frontend/statics/*
 /imports
 generated/
+packages/backend/scanners/executables
