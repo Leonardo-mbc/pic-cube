@@ -35,13 +35,13 @@ type Content {
 
 type Query {
   Content(id: Int!): Content!
-  Contents(limit: Int, offset: Int, removed: Boolean): [Content!]
-  ContentsInCollection(collectionId: Int!): [Content!]
-  ContentsInAlbum(albumId: Int!): [Content!]
+  Contents(limit: Int, offset: Int, removed: Boolean): [Content!]!
+  ContentsInCollection(collectionId: Int!): [Content!]!
+  ContentsInAlbum(albumId: Int!): [Content!]!
 }
 
 type Mutation {
-  createCollection(name: String!): Content!
+  createCollection(name: String!, contentIds: [Int!]): Content!
   createAlbum(name: String!): Content!
   createFile(
     name: String!
