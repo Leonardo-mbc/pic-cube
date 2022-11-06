@@ -2,7 +2,7 @@ import workerpool from 'workerpool';
 import chokidar from 'chokidar';
 import nodePath from 'path';
 import * as dotenv from 'dotenv';
-import { getFileStats } from '../utilities/get-file-stats';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -37,7 +37,7 @@ watcher.on('all', async (event, path) => {
 
   switch (event) {
     case 'add': {
-      const fileInfo = await getFileStats(path);
+      const fileInfo = await fs.promises.stat(path);
 
       const thumbBuffer = await makeThumbPool.exec('makeThumbnail', [path, 200]).catch((err) => {
         console.error(err);
