@@ -12,7 +12,7 @@ if (!basePath) {
   process.exit();
 }
 
-const TARGET_EXT = ['.jpeg', '.jpg', '.png', '.bpm', '.gif'];
+const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm', '.gif']);
 
 const makeThumbPool = workerpool.pool(__dirname + '/executables/make-thumbnail.js', {
   workerType: 'thread',
@@ -31,7 +31,7 @@ watcher.on('all', async (event, path) => {
   const { dir, base: filename, ext } = nodePath.parse(path);
   const relativePath = nodePath.relative(basePath, dir);
 
-  if (!TARGET_EXT.includes(ext.toLowerCase())) {
+  if (!TARGET_EXT.has(ext.toLowerCase())) {
     return;
   }
 
