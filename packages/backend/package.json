@@ -3,11 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "ts-node --transpile-only ./server.ts",
-    "start:dev": "ts-node ./server.ts",
+    "start": "run-s build:scanners start:all",
+    "stop": "pm2 kill",
+    "start:all": "pm2 start ./pm2.config.js",
+    "start:all-dev": "run-s 'start:all --watch --no-daemon'",
+    "start:api": "ts-node --transpile-only ./server.ts",
+    "start:api-dev": "ts-node ./server.ts",
+    "start:scanners": "pm2 start ./pm2.config.js --only scanners",
+    "start:scanners-dev": "run-p 'start:scanners --watch --no-daemon' build:scanners-dev",
+    "build:scanners": "tsc -p ./scanners/tsconfig.json",
+    "build:scanners-dev": "run-s 'build:scanners -w'",
     "codegen": "graphql-codegen --config codegen.ts",
-    "start:scanners": "tsc -p ./scanners/tsconfig.json && pm2 start ./scanners/pm2.config.js",
-    "start:dev-scanners": "pm2 start ./scanners/pm2.config.js --watch --no-daemon & tsc -w -p ./scanners/tsconfig.json"
+    "postinstall": "pm2 install typescript"
   },
   "dependencies": {
     "@graphql-tools/load-files": "6.6.1",
@@ -24,6 +31,7 @@
     "express-graphql": "0.12.0",
     "graphql": "16.6.0",
     "graphql-tools": "8.3.6",
+    "npm-run-all": "^4.1.5",
     "pm2": "^5.2.2",
     "ts-node": "10.9.1",
     "typescript": "4.8.4",

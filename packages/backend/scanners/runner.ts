@@ -1,7 +1,10 @@
 import workerpool from 'workerpool';
 import chokidar from 'chokidar';
 import nodePath from 'path';
+import * as dotenv from 'dotenv';
 import { getFileStats } from '../utilities/get-file-stats';
+
+dotenv.config();
 
 const basePath = process.env.SCANNER_BASE_PATH;
 if (!basePath) {
