@@ -67,7 +67,10 @@ export const getContentsInAlbumResolver = async (
 export const createContentCollectionResolver = async (
   args: MutationCreateCollectionArgs
 ): Promise<Content> => {
-  const content = await createContentAsCollection(args);
+  const content = await createContentAsCollection({
+    name: args.name,
+    contentIds: args.contentIds || undefined,
+  });
   return {
     id: content.id,
     name: content.name,

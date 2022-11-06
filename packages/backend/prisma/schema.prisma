@@ -17,7 +17,7 @@ model Content {
   type ContentType
   removed Boolean @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
   lastAccessedAt DateTime @default(now())
   collection Collection[]
   contents CollectionContent[]
@@ -41,7 +41,7 @@ model Collection {
   contentId Int @unique
   lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
   collectionContents CollectionContent[]
 
   @@map("collections")
@@ -52,12 +52,11 @@ model CollectionContent {
   content Content @relation(fields: [contentId], references: [id])
   contentId Int @unique
   collection Collection @relation(fields: [collectionId], references: [id])
-  collectionId Int @unique
+  collectionId Int
   order Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
 
-  @@unique([contentId, collectionId])
   @@map("collectionContents")
 }
 
@@ -67,7 +66,7 @@ model Album {
   contentId Int @unique
   lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
   albumContents AlbumContent[]
 
   @@map("albums")
@@ -80,7 +79,7 @@ model AlbumContent {
   album Album @relation(fields: [albumId], references: [id])
   albumId Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
 
   @@unique([contentId, albumId])
   @@map("albumContents")
@@ -95,7 +94,7 @@ model File {
   fileLastAccessedAt DateTime @default(now())
   fileLastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
 
   @@unique([path, filename])
   @@map("files")
