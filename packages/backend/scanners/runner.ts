@@ -14,7 +14,7 @@ if (!basePath) {
 
 const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm', '.gif']);
 
-const makeThumbPool = workerpool.pool(__dirname + '/executables/make-thumbnail.js', {
+const workersPool = workerpool.pool('./binaries/worker.js', {
   workerType: 'thread',
 });
 
@@ -39,7 +39,7 @@ watcher.on('all', async (event, path) => {
     case 'add': {
       const fileInfo = await fs.promises.stat(path);
 
-      const thumbBuffer = await makeThumbPool.exec('makeThumbnail', [path, 200]).catch((err) => {
+      const thumbBuffer = await workersPool.exec('makeThumbnail', [path, 200]).catch((err) => {
         console.error(err);
       });
       console.log('thumbBuffer', thumbBuffer);

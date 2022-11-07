@@ -1,9 +1,8 @@
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
-import workerpool from 'workerpool';
 
-async function makeThumbnail(path: string, rectSize: number = 200) {
+export async function makeThumbnail(path: string, rectSize: number = 200) {
   const outputPath = `/tmp/${uuidv4()}`;
   const data = await new Promise((resolve, reject) => {
     ffmpeg(fs.createReadStream(path))
@@ -37,7 +36,3 @@ async function makeThumbnail(path: string, rectSize: number = 200) {
 
   return data;
 }
-
-workerpool.worker({
-  makeThumbnail,
-});

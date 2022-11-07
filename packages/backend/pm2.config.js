@@ -11,7 +11,7 @@ module.exports = {
     },
     {
       name: 'scanners',
-      script: './scanners/runner.ts',
+      script: './binaries/scanners/runner.js',
       env: {
         SCANNER_BASE_PATH,
       },
