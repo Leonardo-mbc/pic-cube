@@ -2,6 +2,7 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
 import nodePath from 'path';
+import { makeFileHash } from './make-filehash.service';
 
 const MT_STATUS_EXISTS = 'MT_STATUS_EXISTS';
 const MT_STATUS_OUTPUT_META = 'MT_STATUS_OUTPUT_META';
@@ -10,6 +11,7 @@ const MT_STATUS_ERROR = 'MT_STATUS_ERROR';
 
 interface MakeThumbnailOptions {
   rectSize?: number;
+  seekTo?: number;
   outputMeta?: boolean;
 }
 
@@ -45,6 +47,7 @@ export type MakeThumbnailResponse =
 const META_DIR_NAME = '.meta.picc';
 const DEFAULT_OPTIONS = {
   rectSize: 400,
+  seekTo: 0,
   outputMeta: false,
 };
 
@@ -52,28 +55,42 @@ export async function makeThumbnail(
   path: string,
   options: MakeThumbnailOptions
 ): Promise<MakeThumbnailResponse> {
-  const { rectSize, outputMeta } = { ...DEFAULT_OPTIONS, ...options };
+  const { rectSize, seekTo, outputMeta } = { ...DEFAULT_OPTIONS, ...options };
   const { dir, base: filename, ext } = nodePath.parse(path);
 
   const metaDir = outputMeta ? nodePath.join(dir, META_DIR_NAME, filename) : `/tmp/${uuidv4()}`;
   const containPath = `${metaDir}/contain.jpg`;
   const coverPath = `${metaDir}/cover.jpg`;
+  const hashPath = `${metaDir}/filehash.dat`;
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (!fs.existsSync(metaDir)) {
       fs.mkdirSync(metaDir, { recursive: true });
     }
 
-    if (outputMeta && fs.existsSync(containPath) && fs.existsSync(coverPath)) {
-      console.log('[MAKE_THUMB:EXISTS]', metaDir);
-      return resolve({
-        status: MT_STATUS_EXISTS,
-        containPath,
-        coverPath,
-      });
+    if (
+      outputMeta &&
+      fs.existsSync(containPath) &&
+      fs.existsSync(coverPath) &&
+      fs.existsSync(hashPath)
+    ) {
+      const [fileHash, existsHash] = await Promise.all([
+        makeFileHash(path),
+        fs.promises.readFile(hashPath, 'utf-8'),
+      ]);
+
+      if (fileHash === existsHash) {
+        console.log('[MAKE_THUMB:EXISTS]', metaDir);
+        return resolve({
+          status: MT_STATUS_EXISTS,
+          containPath,
+          coverPath,
+        });
+      }
     }
 
-    ffmpeg(fs.createReadStream(path))
+    ffmpeg(path)
+      .seekInput(seekTo)
       .complexFilter([
         {
           filter: 'scale',
@@ -117,6 +134,8 @@ export async function makeThumbnail(
       })
       .on('end', async () => {
         if (outputMeta) {
+          await fs.promises.writeFile(hashPath, await makeFileHash(path));
+
           console.log('[MAKE_THUMB:OUTPUT_META]', metaDir);
           return resolve({
             status: MT_STATUS_OUTPUT_META,

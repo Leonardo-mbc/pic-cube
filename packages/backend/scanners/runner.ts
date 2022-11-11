@@ -14,7 +14,26 @@ if (!basePath) {
   process.exit();
 }
 
-const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm']);
+const TARGET_EXT = new Set([
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.bpm',
+  '.gif',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.wmv',
+  '.mkv',
+  '.m1v',
+  '.m4v',
+  '.flv',
+  '.mpg',
+  '.mpeg',
+  '.3gp',
+  '.rm',
+  '.vob',
+]);
 
 const workersPool = workerpool.pool('./binaries/worker.js', {
   workerType: 'thread',
@@ -25,6 +44,10 @@ const watcher = chokidar.watch(basePath, {
   persistent: true,
   usePolling: true,
   interval: 10000,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 100,
+  },
 });
 
 console.log('[ADD SCANNER]', basePath);
@@ -47,12 +70,17 @@ watcher.on('all', async (event, path) => {
         const fileInfo = await fs.promises.stat(path);
         await createContentAsFile({
           name: filename,
-          path: path,
+          path: relativePath,
           filename: filename,
           lastAccessedAt: fileInfo.atime,
           lastModifiedAt: fileInfo.mtime,
         });
       }
+      break;
+    }
+
+    case 'change': {
+      await workersPool.exec('makeThumbnail', [path, { outputMeta: true }]).catch(console.error);
       break;
     }
 
