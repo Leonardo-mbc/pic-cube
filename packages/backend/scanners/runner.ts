@@ -3,6 +3,8 @@ import chokidar from 'chokidar';
 import nodePath from 'path';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
+import { createContentAsFile } from '../services/content.service';
+import { MakeThumbnailResponse } from '../services/make-thumbnail.service';
 
 dotenv.config();
 
@@ -12,7 +14,7 @@ if (!basePath) {
   process.exit();
 }
 
-const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm', '.gif']);
+const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm']);
 
 const workersPool = workerpool.pool('./binaries/worker.js', {
   workerType: 'thread',
@@ -37,12 +39,20 @@ watcher.on('all', async (event, path) => {
 
   switch (event) {
     case 'add': {
-      const fileInfo = await fs.promises.stat(path);
+      const thumbnailResult: MakeThumbnailResponse = await workersPool
+        .exec('makeThumbnail', [path, { outputMeta: true }])
+        .catch(console.error);
 
-      const thumbBuffer = await workersPool.exec('makeThumbnail', [path, 200]).catch((err) => {
-        console.error(err);
-      });
-      console.log('thumbBuffer', thumbBuffer);
+      if (thumbnailResult.status === 'MT_STATUS_OUTPUT_META') {
+        const fileInfo = await fs.promises.stat(path);
+        await createContentAsFile({
+          name: filename,
+          path: path,
+          filename: filename,
+          lastAccessedAt: fileInfo.atime,
+          lastModifiedAt: fileInfo.mtime,
+        });
+      }
       break;
     }
 
