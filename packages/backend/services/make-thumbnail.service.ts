@@ -2,6 +2,7 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
 import nodePath from 'path';
+import getColors from 'get-image-colors';
 import { makeFileHash } from './make-filehash.service';
 
 const MT_STATUS_EXISTS = 'MT_STATUS_EXISTS';
@@ -134,14 +135,28 @@ export async function makeThumbnail(
       })
       .on('end', async () => {
         if (outputMeta) {
-          await fs.promises.writeFile(hashPath, await makeFileHash(path));
-
-          console.log('[MAKE_THUMB:OUTPUT_META]', metaDir);
-          return resolve({
-            status: MT_STATUS_OUTPUT_META,
-            containPath,
-            coverPath,
+          const colors = await getColors(containPath, {
+            count: 10,
+            type: 'image/jpg',
           });
+          const darknessAverage = colors.reduce((prev, color) => prev + color.hsl()[2] / 10, 0);
+
+          if ((darknessAverage < 0.4 || darknessAverage > 0.8) && seekTo < 5) {
+            console.log('[MAKE_THUMB:REMAKE]', metaDir, seekTo, darknessAverage);
+            return makeThumbnail(path, {
+              ...options,
+              seekTo: seekTo + 1,
+            });
+          } else {
+            await fs.promises.writeFile(hashPath, await makeFileHash(path));
+
+            console.log('[MAKE_THUMB:OUTPUT_META]', metaDir, seekTo, darknessAverage);
+            return resolve({
+              status: MT_STATUS_OUTPUT_META,
+              containPath,
+              coverPath,
+            });
+          }
         }
 
         const [containBuffer, coverBuffer] = await Promise.all([
