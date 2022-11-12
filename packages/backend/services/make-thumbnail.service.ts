@@ -65,41 +65,41 @@ export async function makeThumbnail(
   const coverPath = `${metaDir}/cover.jpg`;
   const hashPath = `${metaDir}/filehash.dat`;
 
-  return new Promise(async (resolve, reject) => {
+  try {
+    await fs.promises.access(metaDir, fs.constants.R_OK);
+  } catch (_) {
+    await fs.promises.mkdir(metaDir, { recursive: true });
+  }
+
+  if (outputMeta) {
     try {
-      await fs.promises.access(metaDir, fs.constants.R_OK);
-    } catch (_) {
-      await fs.promises.mkdir(metaDir, { recursive: true });
-    }
+      await Promise.all([
+        fs.promises.access(containPath, fs.constants.R_OK),
+        fs.promises.access(coverPath, fs.constants.R_OK),
+        fs.promises.access(hashPath, fs.constants.R_OK),
+      ]);
+      // サムネイルファイルが存在
 
-    if (outputMeta) {
-      try {
-        await Promise.all([
-          fs.promises.access(containPath, fs.constants.R_OK),
-          fs.promises.access(coverPath, fs.constants.R_OK),
-          fs.promises.access(hashPath, fs.constants.R_OK),
-        ]);
-        // サムネイルファイルが存在
+      const [fileHash, existsHash] = await Promise.all([
+        makeFileHash(path),
+        fs.promises.readFile(hashPath, 'utf-8'),
+      ]);
 
-        const [fileHash, existsHash] = await Promise.all([
-          makeFileHash(path),
-          fs.promises.readFile(hashPath, 'utf-8'),
-        ]);
-
-        if (fileHash === existsHash) {
-          console.log('[MAKE_THUMB:EXISTS]', metaDir);
-          return resolve({
-            status: MT_STATUS_EXISTS,
-            containPath,
-            coverPath,
-          });
-        }
-      } catch (_) {
-        // サムネイルが未作成、後述処理に続く
+      if (fileHash === existsHash) {
+        console.log('[MAKE_THUMB:EXISTS]', metaDir);
+        return {
+          status: MT_STATUS_EXISTS,
+          containPath,
+          coverPath,
+        };
       }
+    } catch (_) {
+      // サムネイルが未作成、後述処理に続く
     }
+  }
 
-    function runFFmpeg(seekTo: number) {
+  function runFFmpeg(seekTo: number): Promise<MakeThumbnailResponse> {
+    return new Promise(async (resolve, reject) => {
       ffmpeg(path)
         .seekInput(seekTo)
         .complexFilter([
@@ -181,8 +181,8 @@ export async function makeThumbnail(
           });
         })
         .run();
-    }
+    });
+  }
 
-    runFFmpeg(seekTo);
-  });
+  return runFFmpeg(seekTo);
 }
