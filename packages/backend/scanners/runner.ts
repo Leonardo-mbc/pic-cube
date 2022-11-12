@@ -62,19 +62,24 @@ watcher.on('all', async (event, path) => {
 
   switch (event) {
     case 'add': {
-      const thumbnailResult: MakeThumbnailResponse = await workersPool
-        .exec('makeThumbnail', [path, { outputMeta: true }])
-        .catch(console.error);
+      try {
+        const thumbnailResult: MakeThumbnailResponse = await workersPool.exec('makeThumbnail', [
+          path,
+          { outputMeta: true },
+        ]);
 
-      if (thumbnailResult.status === 'MT_STATUS_OUTPUT_META') {
-        const fileInfo = await fs.promises.stat(path);
-        await createContentAsFile({
-          name: filename,
-          path: relativePath,
-          filename: filename,
-          lastAccessedAt: fileInfo.atime,
-          lastModifiedAt: fileInfo.mtime,
-        });
+        if (thumbnailResult.status === 'MT_STATUS_OUTPUT_META') {
+          const fileInfo = await fs.promises.stat(path);
+          await createContentAsFile({
+            name: filename,
+            path: relativePath,
+            filename: filename,
+            lastAccessedAt: fileInfo.atime,
+            lastModifiedAt: fileInfo.mtime,
+          });
+        }
+      } catch (e) {
+        console.error(e);
       }
       break;
     }
