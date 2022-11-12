@@ -60,33 +60,42 @@ export async function makeThumbnail(
   const { dir, base: filename } = nodePath.parse(path);
 
   const metaDir = outputMeta ? nodePath.join(dir, META_DIR_NAME, filename) : `/tmp/${uuidv4()}`;
+
   const containPath = `${metaDir}/contain.jpg`;
   const coverPath = `${metaDir}/cover.jpg`;
   const hashPath = `${metaDir}/filehash.dat`;
 
   return new Promise(async (resolve, reject) => {
-    if (!fs.existsSync(metaDir)) {
-      fs.mkdirSync(metaDir, { recursive: true });
+    try {
+      await fs.promises.access(metaDir, fs.constants.R_OK);
+    } catch (_) {
+      await fs.promises.mkdir(metaDir, { recursive: true });
     }
 
-    if (
-      outputMeta &&
-      fs.existsSync(containPath) &&
-      fs.existsSync(coverPath) &&
-      fs.existsSync(hashPath)
-    ) {
-      const [fileHash, existsHash] = await Promise.all([
-        makeFileHash(path),
-        fs.promises.readFile(hashPath, 'utf-8'),
-      ]);
+    if (outputMeta) {
+      try {
+        await Promise.all([
+          fs.promises.access(containPath, fs.constants.R_OK),
+          fs.promises.access(coverPath, fs.constants.R_OK),
+          fs.promises.access(hashPath, fs.constants.R_OK),
+        ]);
+        // サムネイルファイルが存在
 
-      if (fileHash === existsHash) {
-        console.log('[MAKE_THUMB:EXISTS]', metaDir);
-        return resolve({
-          status: MT_STATUS_EXISTS,
-          containPath,
-          coverPath,
-        });
+        const [fileHash, existsHash] = await Promise.all([
+          makeFileHash(path),
+          fs.promises.readFile(hashPath, 'utf-8'),
+        ]);
+
+        if (fileHash === existsHash) {
+          console.log('[MAKE_THUMB:EXISTS]', metaDir);
+          return resolve({
+            status: MT_STATUS_EXISTS,
+            containPath,
+            coverPath,
+          });
+        }
+      } catch (_) {
+        // サムネイルが未作成、後述処理に続く
       }
     }
 
@@ -162,7 +171,7 @@ export async function makeThumbnail(
             fs.promises.readFile(coverPath),
           ]);
 
-          fs.rmSync(metaDir, { recursive: true, force: true });
+          await fs.promises.rm(metaDir, { recursive: true, force: true });
 
           console.log('[MAKE_THUMB:RETURN_BUFFER]', metaDir);
           return resolve({
