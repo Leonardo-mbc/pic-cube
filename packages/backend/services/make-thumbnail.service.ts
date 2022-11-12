@@ -57,7 +57,7 @@ export async function makeThumbnail(
   options: MakeThumbnailOptions
 ): Promise<MakeThumbnailResponse> {
   const { rectSize, seekTo, outputMeta } = { ...DEFAULT_OPTIONS, ...options };
-  const { dir, base: filename, ext } = nodePath.parse(path);
+  const { dir, base: filename } = nodePath.parse(path);
 
   const metaDir = outputMeta ? nodePath.join(dir, META_DIR_NAME, filename) : `/tmp/${uuidv4()}`;
   const containPath = `${metaDir}/contain.jpg`;
