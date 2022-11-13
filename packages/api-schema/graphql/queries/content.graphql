@@ -9,3 +9,15 @@ query getContentById($id: Int!) {
     }
   }
 }
+
+query getContents($limit: Int, $offset: Int, $removed: Boolean) {
+  Contents(limit: $limit, offset: $offset, removed: $removed) {
+    id
+    name
+    type
+    file {
+      path
+      filename
+    }
+  }
+}

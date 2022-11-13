@@ -6,6 +6,7 @@ enum ContentType {
 
 type Collection {
   id: Int!
+  contents: [Content!]!
   lastModifiedAt: DateTime!
 }
 
