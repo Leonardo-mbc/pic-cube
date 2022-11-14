@@ -3,6 +3,8 @@ import chokidar from 'chokidar';
 import nodePath from 'path';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
+import { createContentAsFile } from '../services/content.service';
+import { MakeThumbnailResponse } from '../services/make-thumbnail.service';
 
 dotenv.config();
 
@@ -12,7 +14,26 @@ if (!basePath) {
   process.exit();
 }
 
-const TARGET_EXT = new Set(['.jpeg', '.jpg', '.png', '.bpm', '.gif']);
+const TARGET_EXT = new Set([
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.bpm',
+  '.gif',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.wmv',
+  '.mkv',
+  '.m1v',
+  '.m4v',
+  '.flv',
+  '.mpg',
+  '.mpeg',
+  '.3gp',
+  '.rm',
+  '.vob',
+]);
 
 const workersPool = workerpool.pool('./binaries/worker.js', {
   workerType: 'thread',
@@ -23,6 +44,10 @@ const watcher = chokidar.watch(basePath, {
   persistent: true,
   usePolling: true,
   interval: 10000,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 100,
+  },
 });
 
 console.log('[ADD SCANNER]', basePath);
@@ -37,12 +62,30 @@ watcher.on('all', async (event, path) => {
 
   switch (event) {
     case 'add': {
-      const fileInfo = await fs.promises.stat(path);
+      try {
+        const thumbnailResult: MakeThumbnailResponse = await workersPool.exec('makeThumbnail', [
+          path,
+          { outputMeta: true },
+        ]);
 
-      const thumbBuffer = await workersPool.exec('makeThumbnail', [path, 200]).catch((err) => {
-        console.error(err);
-      });
-      console.log('thumbBuffer', thumbBuffer);
+        if (thumbnailResult.status === 'MT_STATUS_OUTPUT_META') {
+          const fileInfo = await fs.promises.stat(path);
+          await createContentAsFile({
+            name: filename,
+            path: relativePath,
+            filename: filename,
+            lastAccessedAt: fileInfo.atime,
+            lastModifiedAt: fileInfo.mtime,
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      break;
+    }
+
+    case 'change': {
+      await workersPool.exec('makeThumbnail', [path, { outputMeta: true }]).catch(console.error);
       break;
     }
 
