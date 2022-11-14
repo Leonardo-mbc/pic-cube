@@ -7,6 +7,16 @@ query getContentById($id: Int!) {
       path
       filename
     }
+    collection {
+      contents {
+        id
+        name
+        file {
+          path
+          filename
+        }
+      }
+    }
   }
 }
 
@@ -18,6 +28,16 @@ query getContents($limit: Int, $offset: Int, $removed: Boolean) {
     file {
       path
       filename
+    }
+    collection {
+      contents {
+        id
+        name
+        file {
+          path
+          filename
+        }
+      }
     }
   }
 }
