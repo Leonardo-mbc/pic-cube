@@ -136,53 +136,88 @@ export async function makeThumbnail(
         .outputOptions('-pix_fmt yuv420p')
         .outputOptions('-f image2pipe')
 
-        .on('error', (errorMessage) => {
-          console.error('[MAKE_THUMB:FFMPEG_ERROR]', path, errorMessage);
-          return reject({
-            status: MT_STATUS_ERROR,
-            errorMessage,
-          });
-        })
-        .on('end', async () => {
-          if (outputMeta) {
-            const colors = await getColors(containPath, {
-              count: 10,
-              type: 'image/jpg',
-            });
-            const darknessAverage = colors.reduce((prev, color) => prev + color.hsl()[2] / 10, 0);
-
-            if ((darknessAverage < 0.4 || darknessAverage > 0.8) && seekTo < 5) {
-              console.log('[MAKE_THUMB:REMAKE]', metaDir, seekTo, darknessAverage);
-              return runFFmpeg(seekTo + 1);
-            } else {
-              await fs.promises.writeFile(hashPath, await makeFileHash(path));
-
-              console.log('[MAKE_THUMB:OUTPUT_META]', metaDir, seekTo, darknessAverage);
-              return resolve({
-                status: MT_STATUS_OUTPUT_META,
-                containPath,
-                coverPath,
-              });
-            }
-          }
-
-          const [containBuffer, coverBuffer] = await Promise.all([
-            fs.promises.readFile(containPath),
-            fs.promises.readFile(coverPath),
-          ]);
-
-          await fs.promises.rm(metaDir, { recursive: true, force: true });
-
-          console.log('[MAKE_THUMB:RETURN_BUFFER]', metaDir);
-          return resolve({
-            status: MT_STATUS_RETURN_BUFFER,
-            containBuffer,
-            coverBuffer,
-          });
-        })
+        .on('error', reject)
+        .on('end', resolve)
         .run();
     });
   }
 
-  return runFFmpeg(seekTo);
+  if (outputMeta) {
+    // サムネイルを meta ディレクトリに出力する処理
+    let lightnessAverage: number;
+    let nextSeekTo = seekTo;
+
+    do {
+      try {
+        await runFFmpeg(nextSeekTo);
+      } catch (errorMessage) {
+        console.error('[MAKE_THUMB:FFMPEG_ERROR]', path, errorMessage);
+
+        return {
+          status: MT_STATUS_ERROR,
+          errorMessage: errorMessage as string,
+        };
+      }
+
+      const colors = await getColors(containPath, {
+        count: 10,
+        type: 'image/jpg',
+      });
+      lightnessAverage = colors.reduce((prev, color) => prev + color.hsl()[2] / 10, 0);
+      console.log('[MAKE_THUMB:CHECK_LIGHTNESS]', metaDir, nextSeekTo, lightnessAverage);
+      nextSeekTo += 1;
+    } while ((lightnessAverage < 0.4 || lightnessAverage > 0.8) && nextSeekTo < 5);
+
+    try {
+      await fs.promises.writeFile(hashPath, await makeFileHash(path));
+
+      return {
+        status: MT_STATUS_OUTPUT_META,
+        containPath,
+        coverPath,
+      };
+    } catch (errorMessage) {
+      console.error('[MAKE_THUMB:WRITE_FILEHASH_ERROR]', path, errorMessage);
+
+      return {
+        status: MT_STATUS_ERROR,
+        errorMessage: errorMessage as string,
+      };
+    }
+  } else {
+    // ファイルを出力せず Buffer で return する処理
+    try {
+      await runFFmpeg(seekTo);
+    } catch (errorMessage) {
+      console.error('[MAKE_THUMB:FFMPEG_ERROR]', path, errorMessage);
+
+      return {
+        status: MT_STATUS_ERROR,
+        errorMessage: errorMessage as string,
+      };
+    }
+
+    const [containBuffer, coverBuffer] = await Promise.all([
+      fs.promises.readFile(containPath),
+      fs.promises.readFile(coverPath),
+    ]);
+
+    try {
+      await fs.promises.rm(metaDir, { recursive: true, force: true });
+      console.log('[MAKE_THUMB:RETURN_BUFFER]', metaDir);
+
+      return {
+        status: MT_STATUS_RETURN_BUFFER,
+        containBuffer,
+        coverBuffer,
+      };
+    } catch (errorMessage) {
+      console.error('[MAKE_THUMB:REMOVE_TEMPDIR_ERROR]', path, errorMessage);
+
+      return {
+        status: MT_STATUS_ERROR,
+        errorMessage: errorMessage as string,
+      };
+    }
+  }
 }
