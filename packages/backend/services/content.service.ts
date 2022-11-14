@@ -27,7 +27,7 @@ export async function getContents(params: GetContentsParams) {
   return await prisma.content.findMany({
     take: params.limit,
     skip: params.offset,
-    where: { removed: params.removed },
+    where: { removed: params.removed, contents: { none: {} } },
     include: {
       collection: {
         include: { collectionContents: { include: { content: { include: { file: true } } } } },

@@ -4,25 +4,6 @@ enum ContentType {
   FILE
 }
 
-type Collection {
-  id: Int!
-  contents: [Content!]!
-  lastModifiedAt: DateTime!
-}
-
-type Album {
-  id: Int!
-  lastModifiedAt: DateTime!
-}
-
-type File {
-  id: Int!
-  path: String!
-  filename: String!
-  fileLastAccessedAt: DateTime!
-  fileLastModifiedAt: DateTime!
-}
-
 type Content {
   id: Int!
   name: String!

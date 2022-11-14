@@ -8,6 +8,7 @@ query getContentById($id: Int!) {
       filename
     }
     collection {
+      id
       contents {
         id
         name
@@ -30,6 +31,7 @@ query getContents($limit: Int, $offset: Int, $removed: Boolean) {
       filename
     }
     collection {
+      id
       contents {
         id
         name
