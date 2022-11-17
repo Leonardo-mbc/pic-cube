@@ -100,9 +100,7 @@ export const getContentsInCollectionResolver = async (
 export const getContentsInAlbumResolver = async (
   args: QueryContentsInAlbumArgs
 ): Promise<Content[]> => {
-  return (await await getContentsInAlbum(args)).map((albumContent) =>
-    mapContent(albumContent.content)
-  );
+  return (await getContentsInAlbum(args)).map((albumContent) => mapContent(albumContent.content));
 };
 
 export const createContentCollectionResolver = async (
