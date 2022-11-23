@@ -1,0 +1,7 @@
+mutation attachContentToCollection($collectionId: Int!, $contentIds: [Int!]!, $insertOrder: Int) {
+  attachContentsToCollection(
+    collectionId: $collectionId
+    contentIds: $contentIds
+    insertOrder: $insertOrder
+  )
+}

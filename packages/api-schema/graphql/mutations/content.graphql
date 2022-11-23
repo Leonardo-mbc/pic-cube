@@ -3,3 +3,9 @@ mutation createContentAsCollection($name: String!, $contentIds: [Int!]) {
     id
   }
 }
+
+mutation removeContent($id: Int!) {
+  removeContent(id: $id) {
+    id
+  }
+}
