@@ -1,4 +1,3 @@
-import { Content } from '@prisma/client';
 import { prisma } from '../utilities/prisma';
 
 interface GetContentByIdParams {
@@ -8,7 +7,13 @@ interface GetContentByIdParams {
 export async function getContentById(params: GetContentByIdParams) {
   return await prisma.content.findFirstOrThrow({
     where: { id: params.id },
-    include: { collection: true, album: true, file: true },
+    include: {
+      collection: {
+        include: { collectionContents: { include: { content: { include: { file: true } } } } },
+      },
+      album: true,
+      file: true,
+    },
   });
 }
 
@@ -22,8 +27,14 @@ export async function getContents(params: GetContentsParams) {
   return await prisma.content.findMany({
     take: params.limit,
     skip: params.offset,
-    where: { removed: params.removed },
-    include: { collection: true, album: true, file: true },
+    where: { removed: params.removed, contents: { none: {} } },
+    include: {
+      collection: {
+        include: { collectionContents: { include: { content: { include: { file: true } } } } },
+      },
+      album: true,
+      file: true,
+    },
     orderBy: { lastAccessedAt: 'desc' },
   });
 }
@@ -33,20 +44,20 @@ interface GetContentsInCollectionParams {
 }
 
 export async function getContentsInCollection(params: GetContentsInCollectionParams) {
-  const collectionContents = await prisma.collectionContent.findMany({
+  return await prisma.collectionContent.findMany({
     where: { collectionId: params.collectionId },
-    include: { content: { include: { collection: true, album: true, file: true } } },
+    include: {
+      content: {
+        include: {
+          collection: {
+            include: { collectionContents: { include: { content: { include: { file: true } } } } },
+          },
+          album: true,
+          file: true,
+        },
+      },
+    },
   });
-  return collectionContents.map((collectionContent) => ({
-    id: collectionContent.content.id,
-    name: collectionContent.content.name,
-    type: collectionContent.content.type,
-    removed: collectionContent.content.removed,
-    lastAccessedAt: collectionContent.content.lastAccessedAt,
-    collection: collectionContent.content.collection[0],
-    album: collectionContent.content.album[0],
-    file: collectionContent.content.file[0],
-  }));
 }
 
 interface GetContentsInAlbumParams {
@@ -54,20 +65,20 @@ interface GetContentsInAlbumParams {
 }
 
 export async function getContentsInAlbum(params: GetContentsInAlbumParams) {
-  const albumContents = await prisma.albumContent.findMany({
+  return await prisma.albumContent.findMany({
     where: { albumId: params.albumId },
-    include: { content: { include: { collection: true, album: true, file: true } } },
+    include: {
+      content: {
+        include: {
+          collection: {
+            include: { collectionContents: { include: { content: { include: { file: true } } } } },
+          },
+          album: true,
+          file: true,
+        },
+      },
+    },
   });
-  return albumContents.map((albumContent) => ({
-    id: albumContent.content.id,
-    name: albumContent.content.name,
-    type: albumContent.content.type,
-    removed: albumContent.content.removed,
-    lastAccessedAt: albumContent.content.lastAccessedAt,
-    collection: albumContent.content.collection[0],
-    album: albumContent.content.album[0],
-    file: albumContent.content.file[0],
-  }));
 }
 
 interface CreateContentAsCollectionParams {
@@ -86,7 +97,11 @@ export async function createContentAsCollection(params: CreateContentAsCollectio
             create: {},
           },
         },
-        include: { collection: true },
+        include: {
+          collection: {
+            include: { collectionContents: { include: { content: { include: { file: true } } } } },
+          },
+        },
       });
       await prisma.collectionContent.createMany({
         data: (params.contentIds || []).map((contentId, index) => ({

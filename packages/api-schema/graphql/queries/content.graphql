@@ -7,5 +7,39 @@ query getContentById($id: Int!) {
       path
       filename
     }
+    collection {
+      id
+      contents {
+        id
+        name
+        file {
+          path
+          filename
+        }
+      }
+    }
+  }
+}
+
+query getContents($limit: Int, $offset: Int, $removed: Boolean) {
+  Contents(limit: $limit, offset: $offset, removed: $removed) {
+    id
+    name
+    type
+    file {
+      path
+      filename
+    }
+    collection {
+      id
+      contents {
+        id
+        name
+        file {
+          path
+          filename
+        }
+      }
+    }
   }
 }
