@@ -57,6 +57,7 @@ const mapCollection = (collection: CollectionType | undefined) => {
         type: collectionContent.content.type,
         removed: collectionContent.content.removed,
         lastAccessedAt: collectionContent.content.lastAccessedAt,
+        file: collectionContent.content.file?.[0],
       };
     }),
   };
