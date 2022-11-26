@@ -37,7 +37,7 @@ enum ContentType {
 
 model Collection {
   id Int @id @default(autoincrement())
-  content Content @relation(fields: [contentId], references: [id])
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   contentId Int @unique
   lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
@@ -49,9 +49,9 @@ model Collection {
 
 model CollectionContent {
   id Int @id @default(autoincrement())
-  content Content @relation(fields: [contentId], references: [id])
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   contentId Int @unique
-  collection Collection @relation(fields: [collectionId], references: [id])
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   collectionId Int
   order Int
   createdAt DateTime @default(now())
@@ -62,7 +62,7 @@ model CollectionContent {
 
 model Album {
   id Int @id @default(autoincrement())
-  content Content @relation(fields: [contentId], references: [id])
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   contentId Int @unique
   lastModifiedAt DateTime @default(now())
   createdAt DateTime @default(now())
@@ -74,9 +74,9 @@ model Album {
 
 model AlbumContent {
   id Int @id @default(autoincrement())
-  content Content @relation(fields: [contentId], references: [id])
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   contentId Int
-  album Album @relation(fields: [albumId], references: [id])
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
   albumId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
@@ -87,7 +87,7 @@ model AlbumContent {
 
 model File {
   id Int @id @default(autoincrement())
-  content Content @relation(fields: [contentId], references: [id])
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   contentId Int @unique
   path String
   filename String
