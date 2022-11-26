@@ -1,64 +1,109 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
-import { DirectoryList } from '../components/directory-list';
-import { ContentsPanel } from '../components/contents-panel';
-import { DirectoriesTable, ContentsWithChildItems } from '../interfaces/db';
+import { ContentsPanel, Content as ContentsPanelContent } from '../components/contents-panel';
 import styles from './index/styles.module.css';
 import { PageTitle } from '../components/page-title';
-import { useEffect } from 'react';
-import { useSetRecoilState } from 'recoil';
-import { contentsState } from '../components/contents-panel/state';
-import { listContents, listDirectories } from './api/db/list-contents';
-import { checkTables } from './api/db/check';
+import { sdk } from '../utilities/api';
+import { useContents } from './index/use-contents';
+import { useDisplayContent } from './index/use-display-content';
+import { Content } from './index/types';
+import { useDisplayId } from './index/use-display-id';
+import { PreviewScreen } from '../components/contents-panel/preview-screen';
+import { usePrefetchContentIds } from './index/use-prefetch-content-ids';
+import { useRouter } from 'next/router';
+import { useCallback } from 'react';
+import { useContentsPanelContents } from './index/use-contents-panel-contents';
 
 interface IndexProps {
-  directories: DirectoriesTable[];
-  contents: ContentsWithChildItems[];
+  contents: Content[];
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  if (await checkTables()) {
-    const [{ contents }, { directories }] = await Promise.all([listContents(), listDirectories()]);
-
-    const props: IndexProps = {
-      directories,
-      contents,
-    };
-    return {
-      props,
-    };
-  } else {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/install',
-      },
-    };
-  }
+  const { Contents } = await sdk.getContents({ removed: false });
+  const props: IndexProps = { contents: Contents };
+  return { props };
 };
 
 const Index: NextPage<IndexProps> = (props) => {
-  const setContents = useSetRecoilState(contentsState);
+  const router = useRouter();
+  const { contents: contentsRaw, refetchContents: refetchContentsRaw } = useContents(
+    props.contents
+  );
+  const { contents } = useContentsPanelContents({ contents: contentsRaw });
+  const displayId = useDisplayId();
+  const prefetchIds = usePrefetchContentIds({ displayId, contents: contentsRaw });
+  const { displayContent, nextDisplayContent, prevDisplayContent } = useDisplayContent({
+    contents: contentsRaw,
+    prefetchIds,
+    displayId,
+  });
 
-  useEffect(() => {
-    setContents(props.contents);
-  }, [setContents, props.contents]);
+  async function handleBundleContents(selectedContentIds: number[]) {
+    const selectedContents = selectedContentIds
+      .map((id) => contentsRaw.find((content) => content.id === id))
+      .filter((content): content is Content => !!content);
+
+    const collections = selectedContents.filter((content) => content.collection);
+    const files = selectedContents
+      .map((content) => {
+        if (content.collection) {
+          return content.collection.contents;
+        }
+        return [content];
+      })
+      .flat();
+
+    const firstFile = files[0];
+    if (!firstFile) {
+      throw new Error('selectedContentIds requires at least one more content id');
+    }
+
+    await Promise.all(collections.map((collection) => sdk.removeContent({ id: collection.id })));
+    await sdk.createContentAsCollection({
+      name: firstFile.name,
+      contentIds: files.map((file) => file.id),
+    });
+    await refetchContentsRaw();
+  }
+
+  async function handleUnlinkContents(selectedContentIds: number[]) {
+    const selectedContents = selectedContentIds
+      .map((id) => contents.find((content) => content.id === id))
+      .filter((content): content is ContentsPanelContent => !!content);
+    await Promise.all(selectedContents.map((content) => sdk.removeContent({ id: content.id })));
+    await refetchContentsRaw();
+  }
+
+  function handleClosePreview() {
+    router.back();
+  }
+
+  const handleChangeContent = useCallback(
+    ({ id }: { id: number }) => {
+      router.replace(`?display=${id}`, undefined, { shallow: true });
+    },
+    [router]
+  );
 
   return (
     <div className={styles.container}>
       <Head>
         <title>pic-cube</title>
       </Head>
-      {props.directories.length ? (
-        <>
-          <PageTitle title="最近追加したもの" />
-          <ContentsPanel />
-        </>
-      ) : (
-        <div>
-          <p>まずはパスを追加してみてください</p>
-          <DirectoryList directories={props.directories} />
-        </div>
+      <PageTitle title="最近追加したもの" />
+      <ContentsPanel
+        contents={contents}
+        onBundleContents={handleBundleContents}
+        onUnlinkContents={handleUnlinkContents}
+      />
+      {displayContent && (
+        <PreviewScreen
+          content={displayContent}
+          nextContent={nextDisplayContent}
+          prevContent={prevDisplayContent}
+          onClose={handleClosePreview}
+          onChangeContent={handleChangeContent}
+        />
       )}
     </div>
   );

@@ -1,16 +1,25 @@
-import { useRecoilState } from 'recoil';
 import { useRouter } from 'next/router';
-import { isSelectableState } from '../state';
-import { ContentsWithChildItems } from '../../../interfaces/db';
 import styles from './styles.module.css';
 import { MouseEvent, useState } from 'react';
 import clsx from 'clsx';
 
+interface Content {
+  id: number;
+  link: string;
+  name: string;
+  thumbnailUrl?: string;
+  collection?: {
+    contentIds: number[];
+  };
+}
+
 interface ImageProps {
-  content: ContentsWithChildItems;
+  content: Content;
   isSelected: boolean;
+  isSelectable: boolean;
   selectedOrder: number;
-  onSelect: (content: ContentsWithChildItems, shiftKey: boolean) => void;
+  onSelect: (contentId: number, shiftKey: boolean) => void;
+  onChangeIsSelectable: (value: boolean) => void;
 }
 
 const LONG_PRESS_DURATION = 400;
@@ -18,30 +27,27 @@ const LONG_PRESS_DURATION = 400;
 export const Thumbnail: React.FC<ImageProps> = ({
   content,
   isSelected,
+  isSelectable,
   onSelect,
+  onChangeIsSelectable,
   selectedOrder,
 }) => {
   const router = useRouter();
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timer>();
   const [triggerLongPress, setTriggerLongPress] = useState(false);
-  const [isSelectable, setIsSelectable] = useRecoilState(isSelectableState);
-
-  const link = `/static/${content.alias_path}/${content.path}/${content.filename}`;
-  const base64String = Buffer.from(content.thumbnail.data).toString('base64');
-  const thumbData = `data:image/jpeg;base64,${base64String}`;
 
   function checkStartLongPress(e: MouseEvent<HTMLAnchorElement>) {
     setLongPressTimer(
       setTimeout(() => {
         setTriggerLongPress(true);
-        setIsSelectable(true);
+        onChangeIsSelectable(true);
       }, LONG_PRESS_DURATION)
     );
   }
   function checkEndLongPress(e: MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
     if (triggerLongPress || isSelectable) {
-      onSelect(content, e.shiftKey);
+      onSelect(content.id, e.shiftKey);
     }
 
     setTriggerLongPress(false);
@@ -55,24 +61,24 @@ export const Thumbnail: React.FC<ImageProps> = ({
   return (
     <div className={clsx(styles.container)}>
       <a
-        href={link}
+        href={content.link}
         className={clsx({
           [styles.selected]: isSelected,
-          [styles.diffParent]: content.collection_id,
+          [styles.diffParent]: !!content.collection,
         })}
         onClickCapture={checkEndLongPress}
         onMouseDownCapture={checkStartLongPress}
       >
         <section className={styles.rotateBorder} />
         <picture>
-          <img src={thumbData} alt={content.filename} />
+          <img src={content.thumbnailUrl} alt={content.name} />
         </picture>
         <section className={styles.orderDisplay}>
           {selectedOrder}
-          {content.collection_id && `~${selectedOrder + content.contents.length - 1}`}
+          {content.collection && `~${selectedOrder + content.collection.contentIds.length - 1}`}
         </section>
         <div className={styles.label}>
-          <span>{content.filename}</span>
+          <span>{content.name}</span>
         </div>
       </a>
     </div>
