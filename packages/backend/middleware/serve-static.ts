@@ -12,6 +12,15 @@ interface SendError {
 const metaDirectory = '/meta/';
 const metaRefExp = new RegExp(/.*\/meta\//);
 
+/**
+ * Serve static files
+ *
+ * @description
+ *  Serve static files and proxy specific paths. For example,
+ *  if you want to get a thumbnail of the `example.png` file,
+ *  you can use `example.png/meta/cover.png` to get
+ *  `.meta.picc/example.png/cover.png`.
+ */
 export function staticMiddleware(root: string) {
   return function serveStatic(req: Request, res: Response, next: NextFunction) {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
