@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve-static": "http-server ./statics -p 8080 --no-dotfiles",
     "dev": "next dev & yarn serve-static",
     "build": "next build",
     "start": "next start & yarn serve-static",
