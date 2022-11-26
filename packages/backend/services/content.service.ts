@@ -166,5 +166,15 @@ interface RemoveContentParams {
 }
 
 export async function removeContent(params: RemoveContentParams) {
-  return await prisma.content.update({ data: { removed: true }, where: { id: params.id } });
+  return await prisma.$transaction(async (prisma) => {
+    const content = await prisma.content.findFirstOrThrow({ where: { id: params.id } });
+    switch (content.type) {
+      case 'ALBUM':
+      case 'COLLECTION':
+        return await prisma.content.delete({ where: { id: content.id } });
+        break;
+      case 'FILE':
+        return await prisma.content.update({ data: { removed: true }, where: { id: params.id } });
+    }
+  });
 }
