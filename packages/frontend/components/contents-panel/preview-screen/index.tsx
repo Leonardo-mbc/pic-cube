@@ -40,7 +40,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
   const hasPrevChildContent = !!content.collection?.contents[childContentIndex - 1];
   const hasNextChildContent = !!content.collection?.contents[childContentIndex + 1];
 
-  const thumbnailUrl = useMemo(() => {
+  const imageUrl = useMemo(() => {
     if (content.collection) {
       return content.collection.contents[childContentIndex]?.imageUrl;
     }
@@ -82,7 +82,6 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
         if (hasPrevChildContent) {
           setChildContentIndex(childContentIndex - 1);
         } else if (prevContent && onChangeContent) {
-          setChildContentIndex(0);
           onChangeContent(prevContent);
         }
         break;
@@ -91,7 +90,6 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
         if (hasNextChildContent) {
           setChildContentIndex(childContentIndex + 1);
         } else if (nextContent && onChangeContent) {
-          setChildContentIndex(0);
           onChangeContent(nextContent);
         }
         break;
@@ -112,7 +110,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
       {content && (
         <>
           <picture>
-            <img className={styles.image} src={thumbnailUrl} alt={content.name} />
+            <img className={styles.image} src={imageUrl} alt={content.name} />
           </picture>
           <div
             className={clsx(styles.pagination, styles.prev, {
