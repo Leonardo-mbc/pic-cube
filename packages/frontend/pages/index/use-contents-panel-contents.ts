@@ -16,11 +16,11 @@ const mapContent = (content: Content): ContentsPanelContent => {
   };
 };
 
-interface UseControlPanelsContentsParams {
+interface UseContentsPanelContentsParams {
   contents: Content[];
 }
 
-export const useContentsPanelContents = ({ contents }: UseControlPanelsContentsParams) => {
+export const useContentsPanelContents = ({ contents }: UseContentsPanelContentsParams) => {
   return {
     contents: useMemo((): ContentsPanelContent[] => {
       return contents.map(mapContent);
