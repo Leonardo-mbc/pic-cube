@@ -4,6 +4,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import nodePath from 'path';
 import getColors from 'get-image-colors';
 import { makeFileHash } from './make-filehash.service';
+import { isVideoExt } from '../utilities/extentions';
 
 const MT_STATUS_EXISTS = 'MT_STATUS_EXISTS';
 const MT_STATUS_OUTPUT_META = 'MT_STATUS_OUTPUT_META';
@@ -57,7 +58,7 @@ export async function makeThumbnail(
   options: MakeThumbnailOptions
 ): Promise<MakeThumbnailResponse> {
   const { rectSize, seekTo, outputMeta } = { ...DEFAULT_OPTIONS, ...options };
-  const { dir, base: filename } = nodePath.parse(path);
+  const { dir, base: filename, ext } = nodePath.parse(path);
 
   const metaDir = outputMeta ? nodePath.join(dir, META_DIR_NAME, filename) : `/tmp/${uuidv4()}`;
 
@@ -100,8 +101,9 @@ export async function makeThumbnail(
 
   function runFFmpeg(seekTo: number): Promise<MakeThumbnailResponse> {
     return new Promise(async (resolve, reject) => {
-      ffmpeg(path)
-        .seekInput(seekTo)
+      const ffmpegCommand = isVideoExt(ext) ? ffmpeg(path).seekInput(seekTo) : ffmpeg(path);
+
+      ffmpegCommand
         .complexFilter([
           {
             filter: 'scale',
@@ -166,7 +168,11 @@ export async function makeThumbnail(
       lightnessAverage = colors.reduce((prev, color) => prev + color.hsl()[2] / 10, 0);
       console.log('[MAKE_THUMB:CHECK_LIGHTNESS]', metaDir, nextSeekTo, lightnessAverage);
       nextSeekTo += 1;
-    } while ((lightnessAverage < 0.4 || lightnessAverage > 0.8) && nextSeekTo < 5);
+    } while (
+      isVideoExt(ext) &&
+      (lightnessAverage < 0.4 || lightnessAverage > 0.8) &&
+      nextSeekTo < 5
+    );
 
     try {
       await fs.promises.writeFile(hashPath, await makeFileHash(path));
