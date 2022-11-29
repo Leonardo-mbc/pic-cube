@@ -1,4 +1,4 @@
-const Dotenv = require('dotenv-webpack');
+const webpack = require('webpack');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,7 +13,11 @@ const nextConfig = {
     ];
   },
   webpack: (config) => {
-    config.plugins.push(new Dotenv());
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.API_ENDPOINT': JSON.stringify(process.env.API_ENDPOINT),
+      })
+    );
     return config;
   },
 };
