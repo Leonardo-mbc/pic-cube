@@ -98,6 +98,7 @@ const Index: NextPage<IndexProps> = (props) => {
       />
       {displayContent && (
         <PreviewScreen
+          key={displayContent.id}
           content={displayContent}
           nextContent={nextDisplayContent}
           prevContent={prevDisplayContent}
