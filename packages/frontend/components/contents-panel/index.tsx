@@ -1,38 +1,40 @@
 import clsx from 'clsx';
 import { useState } from 'react';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { HiCursorClick } from 'react-icons/hi';
 import { ImImage } from 'react-icons/im';
 import { MdCancel } from 'react-icons/md';
 import { IoIosBrowsers } from 'react-icons/io';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { ContentsTableWithCollections, ContentsWithChildItems } from '../../interfaces/db';
 import { Thumbnail } from './thumbnail';
-import {
-  filteredContentsState,
-  unlinkedContentIdsState,
-  isSelectableState,
-  selectedThumbsState,
-  selectedCollectionsState,
-  contentsState,
-} from './state';
 import { ToolParts } from './toolparts';
 import { ToolPartsSet } from './toolparts-set';
-import * as dbRequest from '../../requests/db';
 import styles from './styles.module.css';
-import { PreviewScreen } from './PreviewScreen';
 
-interface ContentsPanelProps {}
+export interface Content {
+  id: number;
+  link: string;
+  name: string;
+  thumbnailUrl?: string;
+  collection?: {
+    contentIds: number[];
+  };
+}
 
-export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
+interface ContentsPanelProps {
+  contents: Content[];
+  onBundleContents: (selectedContentIds: number[]) => Promise<void>;
+  onUnlinkContents: (selectedContentIds: number[]) => Promise<void>;
+}
+
+export const ContentsPanel: React.FC<ContentsPanelProps> = ({
+  contents,
+  onBundleContents,
+  onUnlinkContents,
+}) => {
   const THUMB_SIZES = ['small', 'medium', 'large'] as const;
   const [thumbSizeIndex, setThumbSizeIndex] = useState<number>(1);
-  const [isSelectable, setIsSelectable] = useRecoilState(isSelectableState);
-  const [selectedThumbs, setSelectedThumbs] = useRecoilState(selectedThumbsState);
-  const [selectedCollections, setSelectedCollections] = useRecoilState(selectedCollectionsState);
-  const contents = useRecoilValue(filteredContentsState);
-  const setContents = useSetRecoilState(contentsState);
-  const [unlinkedContentIds, setUnlinkedContentIds] = useRecoilState(unlinkedContentIdsState);
+  const [isSelectable, setIsSelectable] = useState(false);
+  const [selectedContentIds, setSelectedContentIds] = useState<number[]>([]);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
   function rotateThumbSize() {
@@ -42,76 +44,71 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
 
   function toggleSelectable() {
     if (isSelectable) {
-      setSelectedThumbs([]);
-      setSelectedCollections([]);
+      setSelectedContentIds([]);
     }
     setIsSelectable(!isSelectable);
     setLastSelectedIndex(null);
   }
 
-  function onSelect(content: ContentsWithChildItems, selectedIndex: number, shiftKey: boolean) {
-    const newSelectedThumbs = [...selectedThumbs];
-    const newSelectedCollections = [...selectedCollections];
+  function onSelect(contentId: number, selectedIndex: number, shiftKey: boolean) {
+    if (!isSelectable) {
+      return;
+    }
 
-    function toggleSelect(contentId: number, childContents: ContentsTableWithCollections[]) {
-      const thumbIndex = newSelectedThumbs.indexOf(contentId);
+    const content = contents.find((content) => content.id === contentId);
+    if (!content) {
+      throw new Error('content is not found');
+    }
+
+    const newSelectedContentIds = [...selectedContentIds];
+
+    function toggleSelect(contentId: number) {
+      const thumbIndex = newSelectedContentIds.indexOf(contentId);
       if (0 <= thumbIndex) {
-        newSelectedThumbs.splice(thumbIndex, 1);
+        newSelectedContentIds.splice(thumbIndex, 1);
       } else {
-        newSelectedThumbs.push(contentId);
+        newSelectedContentIds.push(contentId);
       }
-
-      const [childContent, ...remainingChildContent] = childContents.filter(
-        (c) => c.id !== contentId
-      );
-
-      if (childContent) {
-        toggleSelect(childContent.id, remainingChildContent);
+    }
+    function toggleSelectContents(contentIds: number[] | undefined) {
+      if (!contentIds) {
+        return;
+      }
+      for (const id of contentIds) {
+        toggleSelect(id);
       }
     }
 
     if (shiftKey && lastSelectedIndex !== null) {
       const diff = selectedIndex - lastSelectedIndex;
       if (diff === 0) {
-        return;
-      }
-
-      const direction = 0 < diff ? 1 : -1;
-
-      for (let i = lastSelectedIndex; i !== selectedIndex; i += direction) {
-        const index = i + direction;
-        toggleSelect(contents[index].id, contents[index].contents);
+        toggleSelect(content.id);
+        toggleSelectContents(content.collection?.contentIds);
+      } else {
+        const direction = Math.sign(diff);
+        for (let i = lastSelectedIndex; i !== selectedIndex; i += direction) {
+          const index = i + direction;
+          const contentInMultipleSelected = contents[index];
+          toggleSelect(contentInMultipleSelected.id);
+          toggleSelectContents(contentInMultipleSelected.collection?.contentIds);
+        }
       }
     } else {
-      toggleSelect(content.id, content.contents);
+      toggleSelect(content.id);
+      toggleSelectContents(content.collection?.contentIds);
     }
 
-    // コレクション選択の処理、これは再帰処理のあとに記述する必要がある
-    if (content.collection_id) {
-      const CollectionIndex = newSelectedCollections.indexOf(content.collection_id);
-      if (0 <= CollectionIndex) {
-        newSelectedCollections.splice(CollectionIndex, 1);
-      } else {
-        newSelectedCollections.push(content.collection_id);
-      }
-    }
-
-    setSelectedThumbs(newSelectedThumbs);
-    setSelectedCollections(newSelectedCollections);
+    setSelectedContentIds(newSelectedContentIds);
     setLastSelectedIndex(selectedIndex);
   }
 
   async function handleUnlink() {
-    await dbRequest.unlinkContents(selectedThumbs);
-    setUnlinkedContentIds([...unlinkedContentIds, ...selectedThumbs]);
+    await onUnlinkContents(selectedContentIds);
     toggleSelectable();
   }
 
   async function handleBundleContents() {
-    const parentContent = contents.find((content) => content.id === selectedThumbs[0]);
-    await dbRequest.bundleContents(selectedThumbs, selectedCollections, parentContent?.created_at);
-    const { contents: newContents } = await dbRequest.listContents();
-    setContents(newContents);
+    await onBundleContents(selectedContentIds);
     toggleSelectable();
   }
 
@@ -130,15 +127,15 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
             icon={RiDeleteBin5Fill}
             color="red"
             onClick={handleUnlink}
-            disabled={!selectedThumbs.length}
+            disabled={!selectedContentIds.length}
           >
-            {selectedThumbs.length}件を削除する
+            {selectedContentIds.length}件を削除する
           </ToolParts>
           <ToolParts
             icon={IoIosBrowsers}
             color="blue"
             onClick={handleBundleContents}
-            disabled={selectedThumbs.length < 2}
+            disabled={selectedContentIds.length < 2}
           >
             差分コレクションを作る
           </ToolParts>
@@ -162,13 +159,14 @@ export const ContentsPanel: React.FC<ContentsPanelProps> = (props) => {
           <Thumbnail
             key={index}
             content={content}
-            isSelected={selectedThumbs.includes(content.id)}
-            selectedOrder={selectedThumbs.indexOf(content.id) + 1}
-            onSelect={(content, shiftKey) => onSelect(content, index, shiftKey)}
+            isSelected={selectedContentIds.includes(content.id)}
+            isSelectable={isSelectable}
+            selectedOrder={selectedContentIds.indexOf(content.id) + 1}
+            onSelect={(contentId, shiftKey) => onSelect(contentId, index, shiftKey)}
+            onChangeIsSelectable={setIsSelectable}
           />
         ))}
       </div>
-      <PreviewScreen />
     </>
   );
 };

@@ -5,11 +5,13 @@ import { graphqlHTTP } from 'express-graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { typeDefs } from '@pic-cube/api-schema/graphql/typeDefs';
 import { resolvers } from './resolvers';
+import { staticMiddleware } from './middleware/serve-static';
 
 dotenv.config();
 
 const port = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
+const staticDir = process.env.SCANNER_BASE_PATH || '';
 
 const schema = makeExecutableSchema({
   resolvers,
@@ -29,6 +31,7 @@ app.use(
     graphiql: !isProduction,
   })
 );
+app.use('/static', staticMiddleware(staticDir));
 app.listen(port);
 
 if (!isProduction) {

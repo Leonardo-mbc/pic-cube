@@ -1,56 +1,63 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
-import { Element, scroller, animateScroll as scroll } from 'react-scroll';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Element, scroller } from 'react-scroll';
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from 'react-icons/ai';
 import styles from './styles.module.css';
 import clsx from 'clsx';
-import { extructContentsState } from '../state';
-import { useRecoilValue } from 'recoil';
-import { makeContentPath } from '../../../utilities/make-path';
-import type { ContentsTableWithCollections } from '../../../interfaces/db';
 
-interface PreviewScreenProps {}
+export interface Content {
+  id: number;
+  name: string;
+  imageUrl: string;
+  collection?: {
+    contents: {
+      id: number;
+      name: string;
+      imageUrl: string;
+      thumbnailUrl: string;
+    }[];
+  };
+}
 
-export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
-  const router = useRouter();
-  const [dispContentId, setDispContentId] = useState<number>();
+interface PreviewScreenProps {
+  content: Content;
+  prevContent?: Content;
+  nextContent?: Content;
+  onClose?: () => void;
+  onChangeContent?: (content: Content) => void;
+}
+
+export const PreviewScreen: React.FC<PreviewScreenProps> = ({
+  content,
+  prevContent,
+  nextContent,
+  onClose,
+  onChangeContent,
+}: PreviewScreenProps) => {
   const [childContentIndex, setChildContentIndex] = useState<number>(0);
   const [isOriginalSize, setIsOriginalSize] = useState(false);
-  const imageRef = useRef<HTMLImageElement>(null);
   const childContainerRef = useRef<HTMLDivElement>(null);
-  const { content, nextContent, prevContent } = useRecoilValue(extructContentsState(dispContentId));
 
-  const hasPrevChildContent = !!content?.contents[childContentIndex - 1];
-  const hasNextChildContent = !!content?.contents[childContentIndex + 1];
+  const hasPrevChildContent = !!content.collection?.contents[childContentIndex - 1];
+  const hasNextChildContent = !!content.collection?.contents[childContentIndex + 1];
 
-  const displayId = router.query.display;
+  const thumbnailUrl = useMemo(() => {
+    if (content.collection) {
+      return content.collection.contents[childContentIndex]?.imageUrl;
+    }
+    return content.imageUrl;
+  }, [childContentIndex, content]);
 
   const close = useCallback(() => {
-    setDispContentId(undefined);
     setIsOriginalSize(false);
-    setChildContentIndex(0);
 
-    if (displayId) {
-      router.back();
+    if (onClose) {
+      onClose();
     }
-  }, [displayId, router]);
+  }, [onClose]);
 
   useEffect(() => {
-    if (displayId) {
-      const contentId = parseInt(Array.isArray(displayId) ? displayId[0] : displayId);
-      setDispContentId(contentId);
-      setChildContentIndex(0);
-    } else {
-      close();
-    }
-  }, [close, displayId]);
-
-  useEffect(() => {
-    const childContent = content?.contents[childContentIndex];
-
+    const childContent = content.collection?.contents[childContentIndex];
     if (childContent && childContainerRef.current) {
-      setChildContent(childContent);
-
       const offset = -childContainerRef.current.getBoundingClientRect().width / 2 + 53;
       scroller.scrollTo(`ps-child-${childContentIndex}`, {
         duration: 350,
@@ -62,18 +69,9 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
     }
   }, [content, childContentIndex]);
 
-  function setChildContent(childContent: ContentsTableWithCollections) {
-    if (imageRef.current) {
-      imageRef.current.src = makeContentPath(childContent);
-    }
-  }
-
   function handleFullScreen(e: React.MouseEvent<HTMLDivElement>) {
     e.stopPropagation();
-
-    if (imageRef.current) {
-      setIsOriginalSize(!isOriginalSize);
-    }
+    setIsOriginalSize(!isOriginalSize);
   }
 
   function handlePagination(e: React.MouseEvent<HTMLDivElement>, direction: 'prev' | 'next') {
@@ -82,19 +80,19 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
     switch (direction) {
       case 'prev': {
         if (hasPrevChildContent) {
-          setChildContent(content.contents[childContentIndex - 1]);
           setChildContentIndex(childContentIndex - 1);
-        } else if (prevContent) {
-          router.replace(`?display=${prevContent.id}`, undefined, { shallow: true });
+        } else if (prevContent && onChangeContent) {
+          setChildContentIndex(0);
+          onChangeContent(prevContent);
         }
         break;
       }
       case 'next': {
         if (hasNextChildContent) {
-          setChildContent(content.contents[childContentIndex + 1]);
           setChildContentIndex(childContentIndex + 1);
-        } else if (nextContent) {
-          router.replace(`?display=${nextContent.id}`, undefined, { shallow: true });
+        } else if (nextContent && onChangeContent) {
+          setChildContentIndex(0);
+          onChangeContent(nextContent);
         }
         break;
       }
@@ -114,12 +112,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
       {content && (
         <>
           <picture>
-            <img
-              ref={imageRef}
-              className={styles.image}
-              src={makeContentPath(content)}
-              alt={content.filename}
-            />
+            <img className={styles.image} src={thumbnailUrl} alt={content.name} />
           </picture>
           <div
             className={clsx(styles.pagination, styles.prev, {
@@ -133,23 +126,21 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (props) => {
             })}
             onClick={(e) => handlePagination(e, 'next')}
           ></div>
-          {content.contents.length > 0 && !isOriginalSize && (
+          {content.collection && content.collection.contents.length > 0 && !isOriginalSize && (
             <div
               ref={childContainerRef}
               className={styles.childContents}
               onClick={(e) => e.stopPropagation()}
             >
-              {content.contents.map((content, index) => {
-                const base64String = Buffer.from(content.thumbnail.data).toString('base64');
-                const thumbData = `data:image/jpeg;base64,${base64String}`;
+              {content.collection.contents.map((content, index) => {
                 return (
                   <Element key={index} name={`ps-child-${index}`} className={styles.scrollElement}>
                     <picture>
                       <img
                         className={clsx({ [styles.selected]: childContentIndex === index })}
-                        src={thumbData}
+                        src={content.thumbnailUrl}
                         onClick={() => setChildContentIndex(index)}
-                        alt={`${content.filename}_${index}`}
+                        alt={`${content.name}_${index}`}
                       />
                     </picture>
                   </Element>
