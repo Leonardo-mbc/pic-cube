@@ -6,20 +6,41 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "dotenv -e .env.production pm2 start ./pm2.prod.config.js",
+    "start:dev": "dotenv -e .env -e .env.development pm2 start ./pm2.dev.config.js --watch --no-daemon",
+    "start:api-dev": "dotenv -e .env -e .env.development pm2 start ./pm2.dev.config.js --watch --no-daemon --only api",
+    "start:scanners-dev": "dotenv -e .env -e .env.development pm2 start ./pm2.dev.config.js --watch --no-daemon --only scanners",
+    "start:frontend-dev": "dotenv -e .env -e .env.development pm2 start ./pm2.dev.config.js --watch --no-daemon --only frontend",
+    "stop": "pm2 kill",
+    "build": "run-s build:api-schema build:backend build:frontend",
+    "build:backend": "yarn workspace @pic-cube/backend build",
+    "build:frontend": "yarn workspace @pic-cube/frontend build",
+    "build:api-schema": "yarn workspace @pic-cube/api-schema codegen",
+    "watch": "run-p watch:backend",
+    "watch:backend": "yarn workspace @pic-cube/backend watch",
+    "dev": "run-p watch start:dev",
+    "dev-api": "run-p start:api-dev",
+    "dev-scanners": "run-p watch:backend start:scanners-dev",
+    "dev-frontend": "run-p start:frontend-dev",
     "lint": "eslint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "pm2 install typescript"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
   },
+  "dependencies": {
+    "npm-run-all": "4.1.5",
+    "pm2": "5.2.2"
+  },
   "devDependencies": {
     "eslint": "8.21.0",
     "eslint-config-next": "12.2.3",
-    "eslint-config-prettier": "^8.5.0",
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
-    "prettier": "^2.7.1"
+    "eslint-config-prettier": "8.5.0",
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3",
+    "prettier": "2.7.1"
   }
 }
