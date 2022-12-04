@@ -14,7 +14,7 @@
     "stop": "pm2 kill",
     "build": "run-s build:api-schema build:backend build:frontend",
     "build:backend": "yarn workspace @pic-cube/backend build",
-    "build:frontend": "yarn workspace @pic-cube/frontend build",
+    "build:frontend": "dotenv -e .env.production yarn workspace @pic-cube/frontend build",
     "build:api-schema": "yarn workspace @pic-cube/api-schema build",
     "watch": "run-p watch:backend watch:api-schema",
     "watch:backend": "yarn workspace @pic-cube/backend watch",
