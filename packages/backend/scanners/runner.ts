@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import fs from 'fs';
 import { createContentAsFile } from '../services/content.service';
 import { MakeThumbnailResponse } from '../services/make-thumbnail.service';
+import { isTargetExt } from '../utilities/extentions';
 
 dotenv.config();
 
@@ -13,27 +14,6 @@ if (!basePath) {
   console.error('SCANNER_BASE_PATH NOT FOUND');
   process.exit();
 }
-
-const TARGET_EXT = new Set([
-  '.jpeg',
-  '.jpg',
-  '.png',
-  '.bpm',
-  '.gif',
-  '.mp4',
-  '.mov',
-  '.avi',
-  '.wmv',
-  '.mkv',
-  '.m1v',
-  '.m4v',
-  '.flv',
-  '.mpg',
-  '.mpeg',
-  '.3gp',
-  '.rm',
-  '.vob',
-]);
 
 const workersPool = workerpool.pool('./binaries/worker.js', {
   workerType: 'thread',
@@ -56,7 +36,7 @@ watcher.on('all', async (event, path) => {
   const { dir, base: filename, ext } = nodePath.parse(path);
   const relativePath = nodePath.relative(basePath, dir);
 
-  if (!TARGET_EXT.has(ext.toLowerCase())) {
+  if (!isTargetExt(ext)) {
     return;
   }
 
