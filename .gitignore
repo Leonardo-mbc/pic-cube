@@ -38,5 +38,6 @@ yarn-error.log*
 # ignore dir
 /packages/frontend/statics/*
 /imports
-generated/
 packages/backend/binaries
+packages/api-schema/lib
+packages/api-schema/graphql/generated

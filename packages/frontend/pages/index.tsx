@@ -4,15 +4,15 @@ import { ContentsPanel, Content as ContentsPanelContent } from '../components/co
 import styles from './index/styles.module.css';
 import { PageTitle } from '../components/page-title';
 import { sdk } from '../utilities/api';
-import { useContents } from './index/use-contents';
-import { useDisplayContent } from './index/use-display-content';
-import { Content } from './index/types';
-import { useDisplayId } from './index/use-display-id';
+import { useContents } from '../page-modules/index/use-contents';
+import { useDisplayContent } from '../page-modules/index/use-display-content';
+import { Content } from '../page-modules/index/types';
+import { useDisplayId } from '../page-modules/index/use-display-id';
 import { PreviewScreen } from '../components/contents-panel/preview-screen';
-import { usePrefetchContentIds } from './index/use-prefetch-content-ids';
+import { usePrefetchContentIds } from '../page-modules/index/use-prefetch-content-ids';
 import { useRouter } from 'next/router';
 import { useCallback } from 'react';
-import { useContentsPanelContents } from './index/use-contents-panel-contents';
+import { useContentsPanelContents } from '../page-modules/index/use-contents-panel-contents';
 
 interface IndexProps {
   contents: Content[];

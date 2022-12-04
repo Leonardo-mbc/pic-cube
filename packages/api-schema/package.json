@@ -2,8 +2,11 @@
   "name": "@pic-cube/api-schema",
   "version": "0.1.0",
   "private": true,
+  "main": "lib/index.js",
   "scripts": {
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "build": "yarn codegen && tsc",
+    "watch": "yarn codegen --watch & tsc -w"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "2.13.7",

@@ -4,5 +4,5 @@
 
 ```bash
 yarn install --frozen-lockfile
-yarn codegen
+yarn build
 ```

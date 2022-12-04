@@ -10,8 +10,7 @@ const config: CodegenConfig = {
         enumsAsConst: true,
       },
     },
-    // HACK: Direct output because TS of external packages cannot be transpile
-    '../frontend/graphql/generated/client.type.ts': {
+    './graphql/generated/client.type.ts': {
       documents: './graphql/**/*.graphql',
       plugins: ['typescript', 'typescript-operations', 'typescript-graphql-request'],
       config: {
