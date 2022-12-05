@@ -1,4 +1,4 @@
-import { ContentType } from '../../graphql/generated/client.type';
+import { client } from '@pic-cube/api-schema';
 
 export interface ContentFile {
   path: string;
@@ -8,7 +8,7 @@ export interface ContentFile {
 export interface Content {
   id: number;
   name: string;
-  type: ContentType;
+  type: client.ContentType;
   file?: ContentFile | null;
   collection?: {
     id: number;

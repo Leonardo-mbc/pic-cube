@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'api',
-      script: './binaries/server.js',
+      script: './server.ts',
       cwd: './packages/backend',
     },
     {

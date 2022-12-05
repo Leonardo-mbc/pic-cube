@@ -4,18 +4,17 @@ module.exports = {
       name: 'api',
       script: './server.ts',
       cwd: './packages/backend',
-      watch: ['./packages/backend'],
+      watch: ['.', '../api-schema'],
     },
     {
       name: 'scanners',
       script: './binaries/scanners/runner.js',
       cwd: './packages/backend',
-      watch: ['./packages/backend'],
+      watch: ['.', '../api-schema'],
     },
     {
       name: 'frontend',
       script: 'yarn workspace @pic-cube/frontend dev',
-      watch: [],
     },
   ],
 };
