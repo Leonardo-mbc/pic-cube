@@ -8,12 +8,21 @@ export interface Content {
   id: number;
   name: string;
   imageUrl: string;
+  thumbnailUrl: string;
+  file?: {
+    path: string;
+    filename: string;
+  };
   collection?: {
     contents: {
       id: number;
       name: string;
       imageUrl: string;
       thumbnailUrl: string;
+      file?: {
+        path: string;
+        filename: string;
+      };
     }[];
   };
 }
@@ -40,11 +49,15 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
   const hasPrevChildContent = !!content.collection?.contents[childContentIndex - 1];
   const hasNextChildContent = !!content.collection?.contents[childContentIndex + 1];
 
-  const imageUrl = useMemo(() => {
+  const [{ imageUrl, contentName }, fileInfo] = useMemo(() => {
     if (content.collection) {
-      return content.collection.contents[childContentIndex]?.imageUrl;
+      const selectedContent = content.collection.contents[childContentIndex];
+      return [
+        { imageUrl: selectedContent.imageUrl, contentName: selectedContent.name },
+        selectedContent.file,
+      ];
     }
-    return content.imageUrl;
+    return [{ imageUrl: content.imageUrl, contentName: content.name }, , content.file];
   }, [childContentIndex, content]);
 
   const close = useCallback(() => {
@@ -74,12 +87,16 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
     setIsOriginalSize(!isOriginalSize);
   }
 
-  function handlePagination(e: React.MouseEvent<HTMLDivElement>, direction: 'prev' | 'next') {
+  function handlePagination(
+    e: React.MouseEvent<HTMLDivElement>,
+    direction: 'prev' | 'next',
+    skipChildContent = false
+  ) {
     e.stopPropagation();
 
     switch (direction) {
       case 'prev': {
-        if (hasPrevChildContent) {
+        if (hasPrevChildContent && !skipChildContent) {
           setChildContentIndex(childContentIndex - 1);
         } else if (prevContent && onChangeContent) {
           onChangeContent(prevContent);
@@ -87,7 +104,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
         break;
       }
       case 'next': {
-        if (hasNextChildContent) {
+        if (hasNextChildContent && !skipChildContent) {
           setChildContentIndex(childContentIndex + 1);
         } else if (nextContent && onChangeContent) {
           onChangeContent(nextContent);
@@ -105,50 +122,100 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
         [styles.show]: content,
         [styles.originalSize]: isOriginalSize,
       })}
-      onClick={isOriginalSize ? handleFullScreen : close}
     >
       {content && (
         <>
-          <picture>
-            <img className={styles.image} src={imageUrl} alt={content.name} />
-          </picture>
-          <div
-            className={clsx(styles.pagination, styles.prev, {
-              [styles.showPagination]: prevContent || hasPrevChildContent,
-            })}
-            onClick={(e) => handlePagination(e, 'prev')}
-          ></div>
-          <div
-            className={clsx(styles.pagination, styles.next, {
-              [styles.showPagination]: nextContent || hasNextChildContent,
-            })}
-            onClick={(e) => handlePagination(e, 'next')}
-          ></div>
-          {content.collection && content.collection.contents.length > 0 && !isOriginalSize && (
-            <div
-              ref={childContainerRef}
-              className={styles.childContents}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {content.collection.contents.map((content, index) => {
-                return (
-                  <Element key={index} name={`ps-child-${index}`} className={styles.scrollElement}>
+          <div className={styles.contents} onClick={isOriginalSize ? handleFullScreen : close}>
+            <picture>
+              <img className={styles.image} src={imageUrl} alt={content.name} />
+            </picture>
+            <div className={styles.parts}>
+              <div
+                className={clsx(styles.pagination, styles.prev, {
+                  [styles.showPagination]: prevContent || hasPrevChildContent,
+                })}
+                onClick={(e) => handlePagination(e, 'prev')}
+              >
+                <div
+                  className={styles.sideContentThumb}
+                  onClick={(e) => handlePagination(e, 'prev', true)}
+                >
+                  {prevContent && (
                     <picture>
-                      <img
-                        className={clsx({ [styles.selected]: childContentIndex === index })}
-                        src={content.thumbnailUrl}
-                        onClick={() => setChildContentIndex(index)}
-                        alt={`${content.name}_${index}`}
-                      />
+                      <img src={prevContent.thumbnailUrl} alt={prevContent.name} />
                     </picture>
-                  </Element>
-                );
-              })}
+                  )}
+                </div>
+              </div>
+              <div
+                className={clsx(styles.pagination, styles.next, {
+                  [styles.showPagination]: nextContent || hasNextChildContent,
+                })}
+                onClick={(e) => handlePagination(e, 'next')}
+              >
+                <div
+                  className={styles.sideContentThumb}
+                  onClick={(e) => handlePagination(e, 'next', true)}
+                >
+                  {nextContent && (
+                    <picture>
+                      <img src={nextContent.thumbnailUrl} alt={nextContent.name} />
+                    </picture>
+                  )}
+                </div>
+              </div>
+              <footer>
+                {content.collection && content.collection.contents.length > 0 && !isOriginalSize && (
+                  <div
+                    ref={childContainerRef}
+                    className={styles.childContents}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {content.collection.contents.map((content, index) => {
+                      return (
+                        <Element
+                          key={index}
+                          name={`ps-child-${index}`}
+                          className={styles.scrollElement}
+                        >
+                          <picture>
+                            <img
+                              className={clsx({ [styles.selected]: childContentIndex === index })}
+                              src={content.thumbnailUrl}
+                              onClick={() => setChildContentIndex(index)}
+                              alt={`${content.name}_${index}`}
+                            />
+                          </picture>
+                        </Element>
+                      );
+                    })}
+                  </div>
+                )}
+              </footer>
+
+              <div className={styles.toolContainer}>
+                <div className={styles.toolButton} onClick={handleFullScreen}>
+                  {isOriginalSize ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
+                </div>
+              </div>
             </div>
-          )}
-          <div className={styles.toolContainer}>
-            <div className={styles.toolButton} onClick={handleFullScreen}>
-              {isOriginalSize ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
+          </div>
+          <div className={styles.details}>
+            <div className={styles.contentTitle}>
+              <h1>{contentName}</h1>
+              {fileInfo && <span>{[fileInfo.path, fileInfo.filename].join('/')}</span>}
+            </div>
+            <div className={styles.tags}>
+              <ul>
+                <li>tag</li>
+                <li>タグ</li>
+                <li>すこしながいなまえのたぐ</li>
+                <li>taaaaaaaaaaaaaaaaaaaaaaaag</li>
+                <li>tag</li>
+                <li>タグ</li>
+                <li>すこしながいなまえのたぐ</li>
+                <li>taaaaaaaaaaaaaaaaaaaaaaaag</li>
+              </ul>
             </div>
           </div>
         </>
