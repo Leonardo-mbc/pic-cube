@@ -4,7 +4,7 @@ import styles from './styles.module.css';
 interface PaginationProps {
   page: number; // start from 1
   size: number;
-  range?: number;
+  radius?: number;
   href?: (page: number) => string;
   onChangePage: (page: number) => void;
 }
@@ -12,31 +12,31 @@ interface PaginationProps {
 export const Pagination = ({
   page,
   size,
-  range: rangeRaw = 4,
+  radius: radiusRaw = 4,
   href = (page) => `?page=${page - 1}`,
   onChangePage,
 }: PaginationProps) => {
-  const range = Math.max(rangeRaw, 3);
-  const width = range * 2 + 1;
-  const useOmittedItemOnLeft = size <= width ? false : page - range > 1;
-  const useOmittedItemOnRight = size <= width ? false : page + range < size;
-  const minViewableRange = range - 2; // Minimum range excluding omitted items
+  const radius = Math.max(radiusRaw, 3);
+  const width = radius * 2 + 1;
+  const useOmittedItemOnLeft = size <= width ? false : page - radius > 1;
+  const useOmittedItemOnRight = size <= width ? false : page + radius < size;
+  const minViewableRadius = radius - 2; // Minimum radius excluding omitted items
   let viewableFirst: number;
   let viewableLast: number;
   if (useOmittedItemOnLeft) {
     if (useOmittedItemOnRight) {
-      viewableFirst = page - minViewableRange;
+      viewableFirst = page - minViewableRadius;
     } else {
-      viewableFirst = size - range * 2 + 2;
+      viewableFirst = size - radius * 2 + 2;
     }
   } else {
     viewableFirst = 1;
   }
   if (useOmittedItemOnRight) {
     if (useOmittedItemOnLeft) {
-      viewableLast = page + minViewableRange;
+      viewableLast = page + minViewableRadius;
     } else {
-      viewableLast = range * 2 - 1;
+      viewableLast = radius * 2 - 1;
     }
   } else {
     viewableLast = size;
