@@ -3,7 +3,7 @@ import styles from './styles.module.css';
 
 interface PaginationItemProps {
   page: number;
-  href?: (page: number) => string;
+  createHref?: (page: number) => string;
   onClick: () => void;
   label: string;
   selected?: boolean;
@@ -12,7 +12,7 @@ interface PaginationItemProps {
 
 export const PaginationItem = ({
   page,
-  href = (page) => `?page=${page}`,
+  createHref = (page) => `?page=${page}`,
   label,
   onClick,
   selected,
@@ -21,7 +21,7 @@ export const PaginationItem = ({
   return (
     <a
       className={clsx(styles.button, selected ? styles.selected : undefined)}
-      href={disabled ? undefined : href(page)}
+      href={disabled ? undefined : createHref(page)}
       onClick={(e) => {
         e.preventDefault();
         onClick();

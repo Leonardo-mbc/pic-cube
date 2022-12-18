@@ -131,6 +131,7 @@ const Index: NextPage<IndexProps> = (props) => {
       <Pagination
         page={page}
         size={Math.ceil(contentTotal / props.contentLimit)}
+        createHref={(page) => `?page=${page}&size=${size}`}
         onChangePage={handleChangePage}
       />
     </div>

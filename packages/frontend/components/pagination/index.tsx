@@ -5,7 +5,7 @@ interface PaginationProps {
   page: number; // start from 1
   size: number;
   radius?: number;
-  href?: (page: number) => string;
+  createHref?: (page: number) => string;
   onChangePage: (page: number) => void;
 }
 
@@ -13,7 +13,7 @@ export const Pagination = ({
   page,
   size,
   radius: radiusRaw = 4,
-  href = (page) => `?page=${page - 1}`,
+  createHref = (page) => `?page=${page - 1}`,
   onChangePage,
 }: PaginationProps) => {
   const radius = Math.max(radiusRaw, 3);
@@ -48,7 +48,7 @@ export const Pagination = ({
       <PaginationItem
         label="＜"
         page={page - 1}
-        href={href}
+        createHref={createHref}
         onClick={() => onChangePage(page - 1)}
         disabled={page === 1}
       />
@@ -58,7 +58,7 @@ export const Pagination = ({
           <PaginationItem
             label="1"
             page={1}
-            href={href}
+            createHref={createHref}
             onClick={() => onChangePage(1)}
             selected={1 === page}
           />
@@ -71,7 +71,7 @@ export const Pagination = ({
           key={viewablePage}
           label={`${viewablePage}`}
           page={viewablePage}
-          href={href}
+          createHref={createHref}
           onClick={() => onChangePage(viewablePage)}
           selected={viewablePage === page}
         />
@@ -83,7 +83,7 @@ export const Pagination = ({
           <PaginationItem
             label={`${size}`}
             page={size}
-            href={href}
+            createHref={createHref}
             onClick={() => onChangePage(size)}
             selected={size === page}
           />
@@ -92,7 +92,7 @@ export const Pagination = ({
       <PaginationItem
         label="＞"
         page={page + 1}
-        href={href}
+        createHref={createHref}
         onClick={() => onChangePage(page + 1)}
         disabled={page === size}
       />
