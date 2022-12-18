@@ -14,6 +14,7 @@ module.exports = {
     },
     {
       name: 'frontend',
+      watch: ['../api-schema'],
       script: 'yarn workspace @pic-cube/frontend dev',
     },
   ],
