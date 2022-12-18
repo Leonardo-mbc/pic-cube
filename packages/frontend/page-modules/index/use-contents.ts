@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { sdk } from '../../utilities/api';
 import { Content } from './types';
 
-interface UseContentsProps {
+interface UseContentsParams {
   initialContents: Content[];
   initialContentTotal: number;
   contentPage: number;
@@ -14,7 +14,7 @@ export const useContents = ({
   initialContentTotal,
   contentPage,
   contentLimit,
-}: UseContentsProps) => {
+}: UseContentsParams) => {
   const [contents, setContents] = useState(initialContents);
   const [contentTotal, setContentTotal] = useState(initialContentTotal);
   const prevContentPageRef = useRef(contentPage);
