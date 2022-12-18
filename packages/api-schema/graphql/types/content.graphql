@@ -15,9 +15,14 @@ type Content {
   file: File
 }
 
+type ContentsResponse {
+  contents: [Content!]!
+  total: Int!
+}
+
 type Query {
   Content(id: Int!): Content!
-  Contents(limit: Int, offset: Int, removed: Boolean): [Content!]!
+  Contents(limit: Int, offset: Int, removed: Boolean): ContentsResponse!
   ContentsInCollection(collectionId: Int!): [Content!]!
   ContentsInAlbum(albumId: Int!): [Content!]!
 }

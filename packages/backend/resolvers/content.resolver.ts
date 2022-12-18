@@ -81,13 +81,15 @@ export const geContentResolver = async (args: QueryContentArgs): Promise<Content
   return mapContent(await getContentById(args));
 };
 
-export const getContentsResolver = async (args: QueryContentsArgs): Promise<Content[]> => {
-  const contents = await getContents({
+export const getContentsResolver = async (
+  args: QueryContentsArgs
+): Promise<{ contents: Content[]; total: number }> => {
+  const [total, contents] = await getContents({
     limit: args.limit || undefined,
     offset: args.offset || undefined,
     removed: args.removed === null ? undefined : args.removed,
   });
-  return contents.map(mapContent);
+  return { contents: contents.map(mapContent), total };
 };
 
 export const getContentsInCollectionResolver = async (
