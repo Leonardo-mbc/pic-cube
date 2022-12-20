@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Element, scroller } from 'react-scroll';
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from 'react-icons/ai';
 import styles from './styles.module.css';
 import clsx from 'clsx';
+import { PreviewScreenFooter } from './footer';
 
 export interface Content {
   id: number;
@@ -44,20 +44,20 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
 }: PreviewScreenProps) => {
   const [childContentIndex, setChildContentIndex] = useState<number>(0);
   const [isOriginalSize, setIsOriginalSize] = useState(false);
-  const childContainerRef = useRef<HTMLDivElement>(null);
 
   const hasPrevChildContent = !!content.collection?.contents[childContentIndex - 1];
   const hasNextChildContent = !!content.collection?.contents[childContentIndex + 1];
 
-  const [{ imageUrl, contentName }, fileInfo] = useMemo(() => {
+  const { imageUrl, contentName, fileInfo } = useMemo(() => {
     if (content.collection) {
       const selectedContent = content.collection.contents[childContentIndex];
-      return [
-        { imageUrl: selectedContent.imageUrl, contentName: selectedContent.name },
-        selectedContent.file,
-      ];
+      return {
+        imageUrl: selectedContent.imageUrl,
+        contentName: selectedContent.name,
+        fileInfo: selectedContent.file,
+      };
     }
-    return [{ imageUrl: content.imageUrl, contentName: content.name }, , content.file];
+    return { imageUrl: content.imageUrl, contentName: content.name, fileInfo: content.file };
   }, [childContentIndex, content]);
 
   const close = useCallback(() => {
@@ -67,20 +67,6 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
       onClose();
     }
   }, [onClose]);
-
-  useEffect(() => {
-    const childContent = content.collection?.contents[childContentIndex];
-    if (childContent && childContainerRef.current) {
-      const offset = -childContainerRef.current.getBoundingClientRect().width / 2 + 53;
-      scroller.scrollTo(`ps-child-${childContentIndex}`, {
-        duration: 350,
-        smooth: 'easeOutQuad',
-        container: childContainerRef.current,
-        horizontal: true,
-        offset,
-      });
-    }
-  }, [content, childContentIndex]);
 
   function handleFullScreen(e: React.MouseEvent<HTMLDivElement>) {
     e.stopPropagation();
@@ -164,34 +150,13 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({
                   )}
                 </div>
               </div>
-              <footer>
-                {content.collection && content.collection.contents.length > 0 && !isOriginalSize && (
-                  <div
-                    ref={childContainerRef}
-                    className={styles.childContents}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {content.collection.contents.map((content, index) => {
-                      return (
-                        <Element
-                          key={index}
-                          name={`ps-child-${index}`}
-                          className={styles.scrollElement}
-                        >
-                          <picture>
-                            <img
-                              className={clsx({ [styles.selected]: childContentIndex === index })}
-                              src={content.thumbnailUrl}
-                              onClick={() => setChildContentIndex(index)}
-                              alt={`${content.name}_${index}`}
-                            />
-                          </picture>
-                        </Element>
-                      );
-                    })}
-                  </div>
-                )}
-              </footer>
+              {!isOriginalSize && (
+                <PreviewScreenFooter
+                  content={content}
+                  childContentIndex={childContentIndex}
+                  setChildContentIndex={setChildContentIndex}
+                />
+              )}
 
               <div className={styles.toolContainer}>
                 <div className={styles.toolButton} onClick={handleFullScreen}>
