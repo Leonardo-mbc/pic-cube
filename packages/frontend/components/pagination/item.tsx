@@ -20,7 +20,7 @@ export const PaginationItem = ({
 }: PaginationItemProps) => {
   return (
     <a
-      className={clsx(styles.button, selected ? styles.selected : undefined)}
+      className={clsx(styles.button, { [styles.selected]: selected })}
       href={disabled ? undefined : createHref(page)}
       onClick={(e) => {
         e.preventDefault();
