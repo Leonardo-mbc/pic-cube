@@ -24,14 +24,15 @@ interface GetContentsParams {
 }
 
 export async function getContents(params: GetContentsParams) {
+  const where = { removed: params.removed, contents: { none: {} } };
   return await prisma.$transaction([
     prisma.content.count({
-      where: { removed: params.removed, contents: { none: {} } },
+      where,
     }),
     prisma.content.findMany({
       take: params.limit,
       skip: params.offset,
-      where: { removed: params.removed, contents: { none: {} } },
+      where,
       include: {
         collection: {
           include: { collectionContents: { include: { content: { include: { file: true } } } } },
