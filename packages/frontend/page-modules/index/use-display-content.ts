@@ -9,19 +9,29 @@ const mapContent = (content: Content | undefined): PreviewScreenContent | undefi
     return;
   }
 
-  const { filepath } = convertUrls(content);
+  const { filepath, thumbnailUrl } = convertUrls(content);
   const collection = content.collection
     ? {
         contents: content.collection.contents.map((content) => {
           const { filepath, thumbnailUrl } = convertUrls(content);
-          return { id: content.id, name: content.name, imageUrl: filepath, thumbnailUrl };
+
+          return {
+            id: content.id,
+            name: content.name,
+            imageUrl: filepath,
+            thumbnailUrl,
+            file: content.file || undefined,
+          };
         }),
       }
     : undefined;
+
   return {
     id: content.id,
     name: content.name,
     imageUrl: filepath,
+    thumbnailUrl,
+    file: content.file || undefined,
     collection,
   };
 };
