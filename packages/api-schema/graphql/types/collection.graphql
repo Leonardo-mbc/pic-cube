@@ -1,0 +1,12 @@
+type Collection {
+  id: Int!
+  contents: [Content!]!
+  lastModifiedAt: DateTime!
+}
+
+type Mutation {
+  attachContentToCollection(collectionId: Int!, contentId: Int!, insertOrder: Int): Void
+  attachContentsToCollection(collectionId: Int!, contentIds: [Int!]!, insertOrder: Int): Void
+  detachContentFromCollection(collectionId: Int!, contentId: Int!): Void
+  detachContentsFromCollection(collectionId: Int!, contentIds: [Int!]!): Void
+}

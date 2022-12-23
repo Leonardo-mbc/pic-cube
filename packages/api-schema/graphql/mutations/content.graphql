@@ -1,0 +1,11 @@
+mutation createContentAsCollection($name: String!, $contentIds: [Int!]) {
+  createCollection(name: $name, contentIds: $contentIds) {
+    id
+  }
+}
+
+mutation removeContent($id: Int!) {
+  removeContent(id: $id) {
+    id
+  }
+}

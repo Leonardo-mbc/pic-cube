@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Content {
+  id Int @id @default(autoincrement())
+  name String
+  type ContentType
+  removed Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  lastAccessedAt DateTime @default(now())
+  collection Collection[]
+  contents CollectionContent[]
+  album Album[]
+  albums AlbumContent[]
+  file File[]
+
+  @@index([lastAccessedAt])
+  @@map("contents")
+}
+
+enum ContentType {
+  COLLECTION
+  ALBUM
+  FILE
+}
+
+model Collection {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  contentId Int @unique
+  lastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  collectionContents CollectionContent[]
+
+  @@map("collections")
+}
+
+model CollectionContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  contentId Int @unique
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId Int
+  order Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@map("collectionContents")
+}
+
+model Album {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  contentId Int @unique
+  lastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  albumContents AlbumContent[]
+
+  @@map("albums")
+}
+
+model AlbumContent {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  contentId Int
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@unique([contentId, albumId])
+  @@map("albumContents")
+}
+
+model File {
+  id Int @id @default(autoincrement())
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  contentId Int @unique
+  path String
+  filename String
+  fileLastAccessedAt DateTime @default(now())
+  fileLastModifiedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@unique([path, filename])
+  @@map("files")
+}

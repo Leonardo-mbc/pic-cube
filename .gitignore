@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -35,5 +36,8 @@ yarn-error.log*
 *.tsbuildinfo
 
 # ignore dir
-/statics/*
+/packages/frontend/statics/*
 /imports
+packages/backend/binaries
+packages/api-schema/lib
+packages/api-schema/graphql/generated
