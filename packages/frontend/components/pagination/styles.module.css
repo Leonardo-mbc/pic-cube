@@ -1,0 +1,33 @@
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 32px;
+}
+
+.button {
+  min-width: 26px;
+  padding: 10px;
+  line-height: 24px;
+  text-align: center;
+  color: var(--white);
+  background-color: var(--black-l);
+  border-radius: 4px;
+
+  &:not([href]) {
+    pointer-events: none;
+    background-color: rgba(1, 1, 1, 0.3);
+  }
+}
+
+.selected {
+  background-color: var(--blue);
+}
+
+.omission {
+  min-width: 26px;
+  padding: 10px;
+  line-height: 24px;
+  text-align: center;
+}

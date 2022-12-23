@@ -7,30 +7,48 @@ import { sdk } from '../utilities/api';
 import { useContents } from '../page-modules/index/use-contents';
 import { useDisplayContent } from '../page-modules/index/use-display-content';
 import { Content } from '../page-modules/index/types';
-import { useDisplayId } from '../page-modules/index/use-display-id';
 import { PreviewScreen } from '../components/contents-panel/preview-screen';
 import { usePrefetchContentIds } from '../page-modules/index/use-prefetch-content-ids';
 import { useRouter } from 'next/router';
 import { useCallback } from 'react';
 import { useContentsPanelContents } from '../page-modules/index/use-contents-panel-contents';
+import { Pagination } from '../components/pagination';
+import { useQueryParams } from '../page-modules/index/use-query-params';
+import { parsePage, parseSize } from '../page-modules/index/parse-query-params';
 
 interface IndexProps {
   contents: Content[];
+  contentTotal: number;
+  contentLimit: number;
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const { Contents } = await sdk.getContents({ removed: false });
-  const props: IndexProps = { contents: Contents };
+export const getServerSideProps: GetServerSideProps = async (params) => {
+  const page = parsePage(params.query.page);
+  const size = parseSize(params.query.size);
+  const offset = Math.max(0, (page - 1) * size);
+  const { Contents } = await sdk.getContents({ removed: false, limit: size, offset });
+  const props: IndexProps = {
+    contents: Contents.contents,
+    contentTotal: Contents.total,
+    contentLimit: size,
+  };
   return { props };
 };
 
 const Index: NextPage<IndexProps> = (props) => {
   const router = useRouter();
-  const { contents: contentsRaw, refetchContents: refetchContentsRaw } = useContents(
-    props.contents
-  );
+  const { displayId, page, size } = useQueryParams();
+  const {
+    contents: contentsRaw,
+    refetchContents: refetchContentsRaw,
+    contentTotal,
+  } = useContents({
+    initialContents: props.contents,
+    initialContentTotal: props.contentTotal,
+    contentPage: page,
+    contentLimit: size,
+  });
   const { contents } = useContentsPanelContents({ contents: contentsRaw });
-  const displayId = useDisplayId();
   const prefetchIds = usePrefetchContentIds({ displayId, contents: contentsRaw });
   const { displayContent, nextDisplayContent, prevDisplayContent } = useDisplayContent({
     contents: contentsRaw,
@@ -78,6 +96,10 @@ const Index: NextPage<IndexProps> = (props) => {
     router.back();
   }
 
+  function handleChangePage(page: number) {
+    router.push(`?page=${page}&size=${size}`, undefined, { shallow: true });
+  }
+
   const handleChangeContent = useCallback(
     ({ id }: { id: number }) => {
       router.replace(`?display=${id}`, undefined, { shallow: true });
@@ -106,6 +128,12 @@ const Index: NextPage<IndexProps> = (props) => {
           onChangeContent={handleChangeContent}
         />
       )}
+      <Pagination
+        page={page}
+        size={Math.ceil(contentTotal / props.contentLimit)}
+        createHref={(page) => `?page=${page}&size=${size}`}
+        onChangePage={handleChangePage}
+      />
     </div>
   );
 };

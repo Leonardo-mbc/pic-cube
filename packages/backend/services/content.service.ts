@@ -24,19 +24,25 @@ interface GetContentsParams {
 }
 
 export async function getContents(params: GetContentsParams) {
-  return await prisma.content.findMany({
-    take: params.limit,
-    skip: params.offset,
-    where: { removed: params.removed, contents: { none: {} } },
-    include: {
-      collection: {
-        include: { collectionContents: { include: { content: { include: { file: true } } } } },
+  const where = { removed: params.removed, contents: { none: {} } };
+  return await prisma.$transaction([
+    prisma.content.count({
+      where,
+    }),
+    prisma.content.findMany({
+      take: params.limit,
+      skip: params.offset,
+      where,
+      include: {
+        collection: {
+          include: { collectionContents: { include: { content: { include: { file: true } } } } },
+        },
+        album: true,
+        file: true,
       },
-      album: true,
-      file: true,
-    },
-    orderBy: { lastAccessedAt: 'desc' },
-  });
+      orderBy: { lastAccessedAt: 'desc' },
+    }),
+  ]);
 }
 
 interface GetContentsInCollectionParams {
